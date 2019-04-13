@@ -1,0 +1,32 @@
+<div class="modal-header">
+  <h4 class="modal-title">Upload Files</h4>
+  <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('crossClick')">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body">
+  <div class="row mx-2">
+    <div class="input-group">
+      <input type="file" #file class="d-none" accept="image/x-png,image/gif,image/jpeg,image/jpg,application/pdf" (change)="onFilesAdded()" />
+      <input type="text" class="form-control focus" placeholder="Chose file(s) ..." readonly="readonly" />
+      <span class="input-group-btn">
+        <button id="uploadBtn" class="btn btn-secondary" type="button" [disabled]="uploading || uploadSuccessful" (click)="addFiles()">Browse</button>
+      </span>
+    </div>
+
+    <ul class="list-group list-group-flush w-100">
+      <li *ngFor="let file of files" class="list-group-item">
+        <div class="row justify-content-between">
+          <h4>{{file.file.name}}</h4>
+          <button class="btn btn-link text-danger" (click)="files.delete(file)"><fa-icon [icon]="'times'"></fa-icon></button>
+        </div>
+        <img class="w-75 my-2 d-block mx-auto" [src]="file.preview" alt="">
+        <ngb-progressbar *ngIf="progress" type="info" [value]="progress[file.file.name].progress | async" height="10px"></ngb-progressbar>
+      </li>
+    </ul>
+  </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss('cancelClick')">Cancel</button>
+  <button type="button" class="btn btn-danger" ngbAutofocus [disabled]="!canBeClosed" (click)="upload()">{{primaryButtonText}}</button>
+</div>

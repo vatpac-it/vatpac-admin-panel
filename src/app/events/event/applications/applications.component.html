@@ -1,0 +1,45 @@
+<div class="container mt-4" *ngIf="model">
+  <div class="card">
+    <div class="card-header">Applications</div>
+    <div class="card-body">
+      <table class="table table-hover table-striped text-center" *ngIf="model.applications">
+        <thead>
+        <tr>
+          <th scope="col">Controller</th>
+          <th scope="col">Date (UTC)</th>
+          <th scope="col">Time (UTC)</th>
+          <th scope="col">Position</th>
+          <th scope="col">Assign</th>
+        </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let cid of objectKeys(model.applications)">
+            <ng-container *ngFor="let date of objectKeys(model.applications[cid].dates)">
+              <tr class="bg-darklight">
+                <th scope="row">{{model.applications[cid].user.name + ' (' + model.applications[cid].user.rating + ') - ' + cid}}</th>
+                <td>{{formatDate(date)}}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr *ngFor="let time of objectKeys(model.applications[cid].dates[date])">
+                <th scope="row"></th>
+                <td></td>
+                <td>{{time.substr(0, 5)}}</td>
+                <td>{{model.applications[cid].dates[date][time].positions.join(', ')}}</td>
+                <td>
+                  <div *ngIf="positions.length > 0" ngbDropdown>
+                    <button class="btn btn-outline-primary" ngbDropdownToggle>{{model.applications[cid].dates[date][time].assigned || positions[0]}}</button>
+                    <div ngbDropdownMenu aria-labelledby="publishStatusDdwn">
+                      <button ngbDropdownItem *ngFor="let pos of positions" (click)="assignPosition(cid, model.applications[cid].user, date, time, pos.icao, pos.position)">{{pos.position}}</button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

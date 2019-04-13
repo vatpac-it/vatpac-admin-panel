@@ -1,0 +1,29 @@
+<div class="container mt-4">
+  <div class="alert alert-info">
+    <h6 class="alert-heading">Welcome to the Events Administrative Panel</h6>
+  </div>
+  <br/>
+
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="['./general']" routerLinkActive="active">General</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="['./atcapps']" routerLinkActive="active">ATC Apps</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="['./applications']" routerLinkActive="active">Applications</a>
+    </li>
+  </ul>
+
+  <router-outlet></router-outlet>
+
+  <div class="row justify-content-center m-4 mb-5">
+    <button class="btn btn-outline-primary btn-lg d-block col-lg-4 col-md-6 col-sm-10" (click)="submit()" [disabled]="loading$ || submitDisabled">
+      <span *ngIf="!loading$">{{submitTxt}}</span>
+      <span *ngIf="loading$" class="spinner-border spinner-border-sm" role="status" aria-hidden="true">
+        <span class="sr-only">Loading...</span>
+      </span>
+    </button>
+  </div>
+</div>

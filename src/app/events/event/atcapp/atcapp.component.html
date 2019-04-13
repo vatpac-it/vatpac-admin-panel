@@ -1,0 +1,95 @@
+<div class="container mt-4" *ngIf="model">
+  <h4>ATC Applications</h4>
+  <br/>
+  <div class="card">
+    <div class="card-header">Settings</div>
+    <div class="card-body">
+      <div class="form">
+        <div class="form-group">
+          <label class="form-label">Shift Length (minutes)</label>
+          <input type="number" class="form-control" [(ngModel)]="model.shiftLength" (change)="modelEmitter.emit(model)">
+        </div>
+      </div>
+    </div>
+  </div>
+  <br/>
+  <div class="card">
+    <div class="card-header">
+      Positions
+      <p class="mb-0"><small class="text-muted">Max 20 positions.</small></p>
+    </div>
+    <div class="card-body">
+      <div class="container-fluid bg-light px-3 py-2">
+        <button class="btn btn-primary btn-sm" (click)="addIcao()">Add position</button>
+        <button class="ml-3 btn btn-danger btn-sm" [disabled]="objectKeys(model.positions).length === 0" (click)="confirmClear(confirmClearModal)">Clear all positions</button>
+      </div>
+      <br>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">Position</th>
+            <th scope="col">Callsign</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let icao of objectKeys(model.positions); let i = index">
+            <tr class="bg-darklight">
+              <th scope="row" class="w-25">
+                <input
+                  #airportICAO
+                  type="text"
+                  placeholder="YPAD (CTR for centre positions)"
+                  class="form-control text-uppercase"
+                  [class.is-invalid]="searchFailed"
+                  maxlength="4"
+                  [value]="icao"
+                  (change)="setIcao(icao.toUpperCase(), $event)"
+                  [ngbTypeahead]="search"
+                  aria-label="Position"
+                />
+              <td class="w-25"></td>
+              <td class="w-50 text-center">
+                <button class="btn btn-link text-info" (click)="addCallsign(icao)" [disabled]="typeof(model.positions[icao]['']) !== 'undefined'">
+                  <fa-icon [icon]="'plus'"></fa-icon>
+                </button>
+                <button class="btn btn-link text-danger" (click)="removeIcao(icao)">
+                  <fa-icon [icon]="'trash'"></fa-icon>
+                </button>
+              </td>
+            </tr>
+            <tr *ngFor="let callsign of objectKeys(model.positions[airportICAO.value || icao] || {}); let i = index">
+              <th scope="row" class="w-25"></th>
+              <td class="w-50"><input type="text" class="form-control" placeholder="TWR" aria-label="Callsign" [value]="callsign" (change)="setCallsign(airportICAO.value || icao, callsign, $event)"></td>
+              <td class="w-25 text-right">
+                <button class="btn btn-link text-danger" (click)="removeCallsign(icao, callsign)">
+                  <fa-icon [icon]="'times'"></fa-icon>
+                </button>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<ng-template #confirmClearModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-title">Confirm delete all positions?</h4>
+    <button type="button" class="close" aria-label="Close button" aria-describedby="modal-title" (click)="modal.dismiss('crossClick')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to delete <span class="text-primary">ALL</span> positions?</strong></p>
+    <p>All information associated to these positions will be permanently deleted.
+      <span class="text-danger">This operation can not be undone.</span>
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss('cancelClick')">Cancel</button>
+    <button type="button" ngbAutofocus class="btn btn-danger" (click)="modal.close('okClick')">Ok</button>
+  </div>
+</ng-template>

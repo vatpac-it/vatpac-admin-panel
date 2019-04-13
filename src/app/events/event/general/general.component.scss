@@ -1,0 +1,28 @@
+.custom-day {
+  text-align: center;
+  padding: 0.185rem 0.25rem;
+  display: inline-block;
+  height: 2rem;
+  width: 2rem;
+
+  &.focused {
+    background-color: #e6e6e6;
+  }
+
+  &.disabled {
+    color: #9c9c9c;
+  }
+
+  &.range, &:not(.disabled):hover {
+    background-color: rgb(2, 117, 216);
+    color: white;
+  }
+
+  &.faded {
+    background-color: rgba(2, 117, 216, 0.5);
+  }
+}
+
+#imagesContainer .card {
+  width: 14rem;
+}

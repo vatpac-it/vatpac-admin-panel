@@ -1,0 +1,149 @@
+<div class="container mt-4" *ngIf="model">
+  <h4>General Details</h4>
+  <br/>
+  <div class="card">
+    <div class="card-header">
+      Main Event Details
+    </div>
+    <div class="card-body">
+      <form #eventForm="ngForm">
+        <div class="form-group">
+          <label>Event Name</label>
+          <input type="text" class="form-control" placeholder="Panic Stations" [(ngModel)]="model.title" (change)="eventsService.setEvent(model)" name="eventName" required>
+        </div>
+        <div class="form-group">
+          <label>Event Subtitle</label>
+          <input type="text" class="form-control" placeholder="Adelaide" [(ngModel)]="model.subTitle" (change)="eventsService.setEvent(model)" name="eventSubtitle" required>
+        </div>
+        <div class="form-group">
+          <label>Event SKU</label>
+          <input type="text" class="form-control disabled" disabled placeholder="panic-stations-adelaide" [value]="getSKU()" (change)="eventsService.setEvent(model)" name="eventSKU" required>
+        </div>
+        <div class="form-group">
+          <label>Publish Status</label>
+          <div class="input-group">
+            <div class="d-inline-block" id="publishStatusDdwn" ngbDropdown>
+              <button class="btn btn-outline-primary" #publishStatusDdwn ngbDropdownToggle>{{publishOptions[model.published || 0]}}</button>
+              <div ngbDropdownMenu aria-labelledby="publishStatusDdwn">
+                <button ngbDropdownItem *ngFor="let state of publishOptions; let i = index" (click)="model.published = i; eventsService.setEvent(model)">{{state}}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Date Range (UTC)</label>
+          <div class="input-group">
+            <ngb-datepicker #dp (select)="onDateSelection($event)" [displayMonths]="2" [dayTemplate]="t" outsideDays="hidden" [minDate]="fromDate" [markDisabled]="(d)"></ngb-datepicker>
+            <ng-template #t let-date let-focused="focused">
+              <span class="custom-day" [class.disabled]="(date.day < minDate.day && date.month === minDate.month) || (date.month < minDate.month)"
+                    [class.focused]="focused"
+                    [class.range]="isRange(date)"
+                    [class.faded]="isHovered(date) || isInside(date)"
+                    (mouseenter)="hoveredDate = date"
+                    (mouseleave)="hoveredDate = null">
+                {{ date.day }}
+              </span>
+            </ng-template>
+          </div>
+        </div>
+        <h5>Time Range</h5>
+        <div class="row">
+          <div class="form-group mx-4">
+            <label>Start Time (UTC)</label>
+            <div class="input-group">
+              <ngb-timepicker [formControl]="startTimeCtrl" required=""></ngb-timepicker>
+            </div>
+          </div>
+          <div class="form-group mx-4">
+            <label>End Time (UTC)</label>
+            <div class="input-group">
+              <ngb-timepicker [formControl]="endTimeCtrl" required=""></ngb-timepicker>
+            </div>
+          </div>
+        </div>
+        <div class="small form-text text-danger" *ngIf="!startTimeCtrl.valid || !endTimeCtrl.valid">
+          <div *ngIf="(startTimeCtrl.errors && startTimeCtrl.errors['startAfterEnd']) || (endTimeCtrl.errors && endTimeCtrl.errors['startAfterEnd'])">The end time cannot be before the start time.</div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <br>
+  <div class="card">
+    <div class="card-header">
+      Sections
+      <p class="mb-0"><small class="text-muted">Max 5 sections.</small></p>
+    </div>
+    <div class="card-body">
+      <div class="container-fluid bg-light px-3 py-2">
+        <button class="btn btn-primary btn-sm" (click)="addSection()" [disabled]="model.sections.length >= 5">Add section</button>
+        <button class="ml-3 btn btn-danger btn-sm" [disabled]="model.sections.length === 0" (click)="confirmClear(confirmClearModal)">Clear all positions</button>
+      </div>
+      <br>
+      <table class="table table-striped">
+        <thead>
+        <tr>
+          <th scope="col">Title</th>
+          <th scope="col">Content</th>
+          <th scope="col">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <ng-container *ngFor="let section of model.sections; let i = index">
+          <tr>
+            <td class="text-center align-middle"><input type="text" class="form-control" placeholder="Pilot Info" aria-label="Title" [(ngModel)]="model.sections[i].title" (change)="eventsService.setEvent(model)"></td>
+            <td class="text-center align-middle"><editor apiKey="yxx4hvfu3duuqo75dcvy2jwiye67zc4fz9e5vrvgq6iw71b3" [init]="{plugins: 'link'}" [(ngModel)]="model.sections[i].content" (change)="eventsService.setEvent(model)"></editor></td>
+            <td class="text-center align-middle">
+              <button class="btn btn-link text-danger" (click)="removeSection(i)">
+                <fa-icon [icon]="'times'"></fa-icon>
+                Remove
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="3">
+              <div class="row justify-content-center my-2">
+                <button class="btn btn-outline-primary" (click)="openUpload(i)">Upload PDF/Images</button>
+              </div>
+              <div *ngIf="section.images.length > 0" id="imagesContainer" class="row my-3 justify-content-around align-items-center">
+                <div *ngFor="let image of section.images" class="card">
+                  <img class="card-img-top" [src]="'https://core.vatpac.org/files/'+image.id" alt="">
+                  <div class="card-body py-2">
+                    <h5 class="card-title m-0">{{image.name}}</h5>
+                  </div>
+                  <div class="card-footer p-1">
+                    <button class="btn btn-link text-danger float-right" (click)="deleteImage(i, image.id)">
+                      <span><fa-icon [icon]="'times'"></fa-icon> Delete</span>
+                      <span *ngIf="loading$" class="spinner-border spinner-border-sm" role="status" aria-hidden="true">
+                        <span class="sr-only">Loading...</span>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<ng-template #confirmClearModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-title">Confirm delete all sections?</h4>
+    <button type="button" class="close" aria-label="Close button" aria-describedby="modal-title" (click)="modal.dismiss('crossClick')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to delete <span class="text-primary">ALL</span> sections?</strong></p>
+    <p>All information associated to these sections will be permanently deleted.
+      <span class="text-danger">This operation can not be undone.</span>
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss('cancelClick')">Cancel</button>
+    <button type="button" ngbAutofocus class="btn btn-danger" (click)="modal.close('okClick')">Ok</button>
+  </div>
+</ng-template>

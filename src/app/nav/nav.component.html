@@ -1,24 +1,19 @@
 <nav class="navbar navbar-expand-md navbar-light bg-light">
   <a class="navbar-brand" routerLink="/">{{ appTitle }}</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+  <button class="navbar-toggler hidden-sm-up" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" [attr.aria-expanded]="navToggled" aria-label="Toggle navigation" (click)="toggleNavbar()">
     <span class="navbar-toggler-icon"></span>
   </button>
-  <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/">General Settings</a>
+  <div class="navbar-collapse collapse" id="navbarSupportedContent" [ngbCollapse]="!navToggled" [@collapse]="isNavbarCollapsedAnim">
+    <ul class="navbar-nav flex-sm-column flex-md-row ml-auto mt-sm-3 mt-md-0 text-center">
+      <li *ngIf="isAdmin()" class="nav-item">
+        <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Dashboard</a>
+      </li>
+      <li *ngIf="isAdmin()" class="nav-item">
+        <a class="nav-link" routerLink="/events" routerLinkActive="active">Events</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" routerLink="/atcapp">ATC Applications</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/slots">Slots</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/users">Users</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="javascript:alert('no you will remain logged in, nerd.');">Log Out</a>
+        <button *ngIf="!loggedIn()" class="btn btn-link nav-link" (click)="login()">Log In</button>
+        <button *ngIf="loggedIn()" class="btn btn-link nav-link text-danger" (click)="logout()">Log Out</button>
       </li>
     </ul>
   </div>

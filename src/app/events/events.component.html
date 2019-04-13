@@ -1,0 +1,53 @@
+<div class="container mt-4">
+  <div class="alert alert-info">
+    <h6 class="alert-heading">Welcome to the Events Administrative Panel</h6>
+  </div>
+  <br/>
+
+  <div class="form-group form-inline justify-content-between px-3">
+    <div>
+      Full text search: <input class="form-control ml-2" type="text" name="searchTerm" [(ngModel)]="eventsService.searchTerm"/>
+      <div class="spinner-border ml-4" role="status" *ngIf="eventsService.loading$ | async">
+        <span class="sr-only">Loading...</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" [routerLink]="['./event/create']">Create Event</button>
+  </div>
+
+  <table class="table table-striped table-hover">
+    <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col" sortable="title" class="selectable" (sort)="onSort($event)">Title</th>
+      <th scope="col" sortable="subTitle" class="selectable" (sort)="onSort($event)">SubTitle</th>
+      <th scope="col" sortable="start" class="selectable" (sort)="onSort($event)">Start</th>
+      <th scope="col" sortable="end" class="selectable" (sort)="onSort($event)">End</th>
+      <th scope="col" sortable="published" class="selectable" (sort)="onSort($event)">Published</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr class="selectable" *ngFor="let event of events$ | async" (click)="router.navigate(['/events/event/edit', event.sku])">
+      <th scope="row">{{ event.id }}</th>
+      <td>
+        <ngb-highlight [result]="event.title" [term]="eventsService.searchTerm"></ngb-highlight>
+      </td>
+      <td><ngb-highlight [result]="event.subTitle" [term]="eventsService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="event.start" [term]="eventsService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="event.end" [term]="eventsService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="event.published" [term]="eventsService.searchTerm"></ngb-highlight></td>
+    </tr>
+    </tbody>
+  </table>
+
+  <div class="d-flex justify-content-between p-2">
+    <ngb-pagination
+      [collectionSize]="total$ | async" [(page)]="eventsService.page" [pageSize]="eventsService.pageSize">
+    </ngb-pagination>
+
+    <select class="custom-select" style="width: auto" name="pageSize" [(ngModel)]="eventsService.pageSize">
+      <option [ngValue]="2">2 events per page</option>
+      <option [ngValue]="4">4 events per page</option>
+      <option [ngValue]="6">6 events per page</option>
+    </select>
+  </div>
+</div>
