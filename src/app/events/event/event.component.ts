@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {EventsService} from "../../services/events.service";
 import {ActivatedRoute, Router} from "@angular/router";
+import {Subject} from "rxjs";
+import {takeUntil} from "rxjs/operators";
 
 @Component({
   selector: 'app-event',
@@ -14,6 +16,8 @@ export class EventComponent implements OnInit {
   submitDisabled = false;
   submitTxt = 'Submit';
 
+  private componetDestroyed: Subject = new Subject();
+
   constructor(private eventsService: EventsService, private route: ActivatedRoute, public router: Router) {
   }
 
@@ -24,12 +28,13 @@ export class EventComponent implements OnInit {
 
       let this$ = this;
       setTimeout(function () {
-        let sub = this$.eventsService.currentEvent.subscribe((data) => {
-          if (!data.id) {
+        this$.eventsService.currentEvent.pipe(takeUntil(this$.componetDestroyed)).subscribe((data) => {
+          if (typeof data.id === 'undefined') {
             this$.router.navigate(['/events']);
-            sub.unsubscribe();
+            this$.componetDestroyed.next();
+            this$.componetDestroyed.unsubscribe();
           }
-        })
+        });
       }, 3000);
 
       this.eventsService.getEvent(this.sku);

@@ -28,10 +28,16 @@
                 <td>{{time.substr(0, 5)}}</td>
                 <td>{{model.applications[cid].dates[date][time].positions.join(', ')}}</td>
                 <td>
-                  <div *ngIf="positions.length > 0" ngbDropdown>
-                    <button class="btn btn-outline-primary" ngbDropdownToggle>{{model.applications[cid].dates[date][time].assigned || positions[0]}}</button>
+                  <div *ngIf="objectKeys(model.positions).length > 0" ngbDropdown>
+                    <button class="btn btn-outline-primary" ngbDropdownToggle>{{model.applications[cid].dates[date][time].assigned || 'None'}}</button>
                     <div ngbDropdownMenu aria-labelledby="publishStatusDdwn">
-                      <button ngbDropdownItem *ngFor="let pos of positions" (click)="assignPosition(cid, model.applications[cid].user, date, time, pos.icao, pos.position)">{{pos.position}}</button>
+                      <button ngbDropdownItem (click)="assignPosition(cid, model.applications[cid].user, date, time, null, 'None')">{{'None'}}</button>
+                      <ng-container *ngFor="let icao of objectKeys(model.positions)">
+                        <button ngbDropdownItem disabled>{{icao}}</button>
+                        <ng-container *ngFor="let position of objectKeys(model.positions[icao])">
+                          <button ngbDropdownItem class="ml-2" (click)="assignPosition(cid, model.applications[cid].user, date, time, icao, position)">{{position}}</button>
+                        </ng-container>
+                      </ng-container>
                     </div>
                   </div>
                 </td>

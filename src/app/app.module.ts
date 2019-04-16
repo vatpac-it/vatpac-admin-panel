@@ -56,8 +56,7 @@ library.add(faCalendarAlt, faTimes);
     NgbModule,
     EditorModule,
     FontAwesomeModule,
-    AppRoutingModule,
-    EventModule
+    AppRoutingModule
   ],
   providers: [DecimalPipe, { provide: HTTP_INTERCEPTORS, useClass: httpInterceptor, multi: true }, CanDeactivateGuard],
   bootstrap: [AppComponent]

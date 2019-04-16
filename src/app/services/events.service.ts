@@ -105,6 +105,23 @@ export class EventsService {
     return this.currentEvent;
   }
 
+  public refreshEvent(): Observable<Event> {
+    this.currentEvent.subscribe(event => {
+      this.http.get<Event>(url + '/' + event.sku).subscribe(res => {
+        if (res['returns'] && res['returns'] === 'failed') {
+          this.router.navigate(['/events']);
+        } else {
+          res.start = new Date(res.start);
+          res.end = new Date(res.end);
+
+          this.setEvent(res);
+        }
+      });
+    });
+
+    return this.currentEvent;
+  }
+
   public createEvent(event): Observable<any> {
     return this.http.post(`${url}/create`, event, { withCredentials: true });
   }
