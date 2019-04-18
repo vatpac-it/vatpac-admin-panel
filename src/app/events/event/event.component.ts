@@ -1,8 +1,9 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {EventsService} from "../../services/events.service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Subject} from "rxjs";
 import {takeUntil} from "rxjs/operators";
+import {AlertService} from "../../services/alert.service";
 
 @Component({
   selector: 'app-event',
@@ -18,7 +19,7 @@ export class EventComponent implements OnInit {
 
   private componetDestroyed: Subject<any> = new Subject<any>();
 
-  constructor(private eventsService: EventsService, private route: ActivatedRoute, public router: Router) {
+  constructor(private eventsService: EventsService, private route: ActivatedRoute, public router: Router, private alertService: AlertService) {
   }
 
   ngOnInit() {
@@ -72,6 +73,7 @@ export class EventComponent implements OnInit {
 
             if (data['request'] && data['request']['result'] && data['request']['result'] === 'success') {
               this.submitTxt = 'Saved';
+              this.alertService.add('success', 'Saved Event Successfully.');
 
               let this$ = this;
               setTimeout(function () {

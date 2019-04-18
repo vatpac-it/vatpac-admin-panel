@@ -19,3 +19,7 @@ html, body {
 .bg-darklight {
   background-color: rgba(0, 0, 0, .1) !important;
 }
+
+button:focus {
+  outline: none;
+}

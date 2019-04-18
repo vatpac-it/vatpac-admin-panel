@@ -1,12 +1,9 @@
 <div class="container mt-4">
-  <div class="alert alert-info">
-    <h6 class="alert-heading">Welcome to the Events Administrative Panel</h6>
-  </div>
   <br/>
 
   <div class="form-group form-inline justify-content-between px-3">
     <div>
-      Full text search: <input class="form-control ml-2" type="text" name="searchTerm" [(ngModel)]="eventsService.searchTerm"/>
+      Events Search: <input class="form-control ml-2" type="text" name="searchTerm" [(ngModel)]="eventsService.searchTerm"/>
       <div class="spinner-border ml-4" role="status" *ngIf="eventsService.loading$ | async">
         <span class="sr-only">Loading...</span>
       </div>
@@ -44,7 +41,7 @@
       [collectionSize]="total$ | async" [(page)]="eventsService.page" [pageSize]="eventsService.pageSize">
     </ngb-pagination>
 
-    <select class="custom-select" style="width: auto" name="pageSize" [(ngModel)]="eventsService.pageSize">
+    <select class="custom-select w-auto" name="pageSize" [(ngModel)]="eventsService.pageSize">
       <option [ngValue]="2">2 events per page</option>
       <option [ngValue]="4">4 events per page</option>
       <option [ngValue]="6">6 events per page</option>

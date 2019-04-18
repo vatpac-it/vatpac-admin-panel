@@ -6,7 +6,7 @@ import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
 import {HTTP_INTERCEPTORS, HttpClientModule, HttpClientXsrfModule} from "@angular/common/http";
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import {faCalendarAlt, fas, faTimes} from '@fortawesome/free-solid-svg-icons';
+import {faCalendarAlt, faTimes} from '@fortawesome/free-solid-svg-icons';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -18,13 +18,14 @@ import { UsersComponent } from './users/users.component';
 import { EventsComponent } from './events/events.component';
 import { EventComponent } from './events/event/event.component';
 import { FileUploadComponent } from './components/file-upload/file-upload.component';
-import {EventModule} from "./events/event/event.module";
 import { SortableHeaderDirective } from './services/sortable-header.directive';
 import {DecimalPipe} from "@angular/common";
 import { LoginComponent } from './login/login.component';
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {httpInterceptor} from "./interceptors/http-interceptor.service";
 import {CanDeactivateGuard} from "./guards/can-deactivate-guard";
+import { AlertComponent } from './components/alert/alert.component';
+import {AlertService} from "./services/alert.service";
 
 library.add(faCalendarAlt, faTimes);
 
@@ -40,7 +41,8 @@ library.add(faCalendarAlt, faTimes);
     EventComponent,
     FileUploadComponent,
     SortableHeaderDirective,
-    LoginComponent
+    LoginComponent,
+    AlertComponent
   ],
   entryComponents: [FileUploadComponent],
   imports: [
@@ -58,7 +60,7 @@ library.add(faCalendarAlt, faTimes);
     FontAwesomeModule,
     AppRoutingModule
   ],
-  providers: [DecimalPipe, { provide: HTTP_INTERCEPTORS, useClass: httpInterceptor, multi: true }, CanDeactivateGuard],
+  providers: [AlertService, DecimalPipe, { provide: HTTP_INTERCEPTORS, useClass: httpInterceptor, multi: true }, CanDeactivateGuard],
   bootstrap: [AppComponent]
 })
 export class AppModule {

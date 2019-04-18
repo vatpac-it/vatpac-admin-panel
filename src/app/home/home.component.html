@@ -1,10 +1,18 @@
 <div class="container-fluid my-5 py-4 px-5">
   <div class="row justify-content-around align-items-center">
-    <a class="card w-25 text-decoration-none text-body" routerLink="/events">
+    <a class="card w-25 text-decoration-none text-body" routerLink="/events" *ngIf="userService.hasEventAccess()">
       <img class="card-img-top" src="https://via.placeholder.com/400x160" alt="Department Image">
       <div class="card-body">
         <h5 class="card-title">Events</h5>
         <p class="card-text">Create and manage events, assign ATC, etc.</p>
+      </div>
+    </a>
+
+    <a class="card w-25 text-decoration-none text-body" routerLink="/users" *ngIf="userService.hasUserAccess()">
+      <img class="card-img-top" src="https://via.placeholder.com/400x160" alt="Department Image">
+      <div class="card-body">
+        <h5 class="card-title">Users</h5>
+        <p class="card-text">View and manager users</p>
       </div>
     </a>
   </div>

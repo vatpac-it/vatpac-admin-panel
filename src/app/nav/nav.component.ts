@@ -27,7 +27,7 @@ export class NavComponent implements OnInit {
   navToggled = false;
   _isNavbarCollapsedAnim = 'closed';
 
-  constructor(private userService: UserService) { }
+  constructor(public userService: UserService) { }
 
   ngOnInit() {
     this.onResize(window);
@@ -57,10 +57,6 @@ export class NavComponent implements OnInit {
 
   loggedIn() {
     return this.userService.loggedIn();
-  }
-
-  isAdmin() {
-    return this.userService.isAdmin();
   }
 
   login() {

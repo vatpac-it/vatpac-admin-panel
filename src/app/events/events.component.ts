@@ -5,6 +5,7 @@ import {EventsService} from "../services/events.service";
 import {Event} from "../models/Event";
 import {DecimalPipe} from "@angular/common";
 import {Router} from "@angular/router";
+import {AlertService} from "../services/alert.service";
 
 @Component({
   selector: 'app-events',
@@ -19,7 +20,7 @@ export class EventsComponent implements OnInit {
 
   @ViewChildren(SortableHeaderDirective) headers: QueryList<SortableHeaderDirective>;
 
-  constructor(public eventsService: EventsService, public router: Router) {
+  constructor(public eventsService: EventsService, public router: Router, private alertService: AlertService) {
     this.events$ = eventsService.events$;
     this.total$ = eventsService.total$;
   }
