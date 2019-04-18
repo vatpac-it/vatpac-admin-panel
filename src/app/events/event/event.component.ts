@@ -16,7 +16,7 @@ export class EventComponent implements OnInit {
   submitDisabled = false;
   submitTxt = 'Submit';
 
-  private componetDestroyed: Subject = new Subject();
+  private componetDestroyed: Subject<any> = new Subject<any>();
 
   constructor(private eventsService: EventsService, private route: ActivatedRoute, public router: Router) {
   }

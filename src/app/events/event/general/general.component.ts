@@ -179,6 +179,8 @@ export class GeneralComponent implements OnInit {
     } else {
       sku = title;
     }
+    sku = sku.replace(/[^\w\s\-]/gi, '');
+    sku = sku.replace(/--*/g, '-');
 
     this.model.sku = sku;
     this.eventsService.setEvent(this.model);

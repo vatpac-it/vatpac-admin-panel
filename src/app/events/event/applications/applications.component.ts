@@ -58,7 +58,7 @@ export class ApplicationsComponent implements OnInit {
     return d.getUTCDate() + '/' + d.getUTCMonth() + '/' + d.getUTCFullYear();
   }
 
-  assignPosition(cid, user, date, start, icao, position) {
+  assignPosition(cid, user, date, start, icao, position, data_hidden) {
     if (cid && date && start) {
       let end;
 
@@ -66,7 +66,7 @@ export class ApplicationsComponent implements OnInit {
         const ts = start.toString().split(':');
         end = new Date(Date.UTC(0, 0, 0, parseInt(ts[0]), parseInt(ts[1]), parseInt(ts[2])));
         end = new Date(end.getTime() + this.model.shiftLength * 60 * 1000);
-
+        end = end.toISOString().substr(11, 8);
 
         if (this.model.positions[icao][position][date]) {
           this.model.positions[icao][position][date].forEach((time, i) => {
@@ -79,7 +79,8 @@ export class ApplicationsComponent implements OnInit {
           this.model.positions[icao][position][date] = [];
         }
 
-        this.model.positions[icao][position][date].push({user: cid, start: start, end: end.toISOString().substr(11, 8)});
+        this.model.positions[icao][position][date].push({user: cid, start: start, end: end});
+        this.model.applications[cid].dates[date][start].assigned = position;
       } else {
         Object.keys(this.model.positions).forEach((ic) => {
           Object.keys(this.model.positions[ic]).forEach((pos) => {
@@ -99,7 +100,7 @@ export class ApplicationsComponent implements OnInit {
         });
       }
 
-      this.eventsService.setPosition(this.model.sku, cid, icao, position, date, start, end).subscribe((data) => {
+      this.eventsService.setPosition(this.model.sku, cid, icao, position, date, start, end, data_hidden).subscribe((data) => {
         if (typeof data['request'] !== 'undefined' && data['request']['result'] === 'success') {
           console.log('SET');
         }

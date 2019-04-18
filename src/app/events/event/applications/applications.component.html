@@ -31,11 +31,11 @@
                   <div *ngIf="objectKeys(model.positions).length > 0" ngbDropdown>
                     <button class="btn btn-outline-primary" ngbDropdownToggle>{{model.applications[cid].dates[date][time].assigned || 'None'}}</button>
                     <div ngbDropdownMenu aria-labelledby="publishStatusDdwn">
-                      <button ngbDropdownItem (click)="assignPosition(cid, model.applications[cid].user, date, time, null, 'None')">{{'None'}}</button>
+                      <button ngbDropdownItem (click)="assignPosition(cid, model.applications[cid].user, date, time, null, 'None', 0)">{{'None'}}</button>
                       <ng-container *ngFor="let icao of objectKeys(model.positions)">
                         <button ngbDropdownItem disabled>{{icao}}</button>
                         <ng-container *ngFor="let position of objectKeys(model.positions[icao])">
-                          <button ngbDropdownItem class="ml-2" (click)="assignPosition(cid, model.applications[cid].user, date, time, icao, position)">{{position}}</button>
+                          <button ngbDropdownItem class="ml-2" (click)="assignPosition(cid, model.applications[cid].user, date, time, icao, position, model.applications[cid].dates[date][time].data_hidden)">{{position}}</button>
                         </ng-container>
                       </ng-container>
                     </div>

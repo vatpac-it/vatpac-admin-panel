@@ -130,8 +130,8 @@ export class EventsService {
     return this.http.post(`${url}/edit`, event, { withCredentials: true });
   }
 
-  public setPosition(event_sku, cid, icao, position, date, start, end) {
-    return this.http.post(`${url}/${event_sku}/setPosition`, {'icao': icao, 'userCid': cid, 'position': position, 'position_date': date, 'position_start': start, 'position_end': end, 'position_data_hidden': 0});
+  public setPosition(event_sku, cid, icao, position, date, start, end, data_hidden) {
+    return this.http.post(`${url}/${event_sku}/setPosition`, {'icao': icao, 'userCid': cid, 'position': position, 'position_date': date, 'position_start': start, 'position_end': end, 'position_data_hidden': data_hidden});
   }
 
   get events$() { return this._events$.asObservable(); }
