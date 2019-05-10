@@ -200,7 +200,7 @@ export class GeneralComponent implements OnInit {
 
   deleteImage(sectionIndex: number, id) {
     this.filesService.deleteImage(id).subscribe((res) => {
-      if (res['request'] && res['request']['result'] === 'success') {
+      if (res.request && res.request.result === 'success') {
         this.model.sections[sectionIndex].images.forEach((val, index) => {
           if (val.id === id) {
             this.model.sections[sectionIndex].images.splice(index, 1);

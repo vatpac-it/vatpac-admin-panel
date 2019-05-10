@@ -5,6 +5,7 @@ import {User} from '../models/User';
 import {SortDirection} from "./sortable-header.directive";
 import {debounceTime, delay, map, switchMap, tap} from "rxjs/operators";
 import {DecimalPipe} from "@angular/common";
+import {CoreResponse} from "../models/CoreResponse";
 
 const url = 'https://core.vatpac.org';
 
@@ -40,8 +41,8 @@ function matches(user: User, term: string, pipe: PipeTransform) {
   return user.cid.toLowerCase().includes(term)
     || user.name.toLowerCase().includes(term)
     || user.atc_rating.toLowerCase().includes(term)
-    || pipe.transform(user.pilot_rating).includes(term)
-    || user.group.name.toLowerCase().includes(term);
+    || user.pilot_rating.toString().toLowerCase().includes(term)
+    || user.groups.primary.name.toLowerCase().includes(term);
 }
 
 @Injectable({
@@ -70,16 +71,16 @@ export class UserService {
     this.currentUser = this.currentUserSubject.asObservable();
 
 
-    this.http.get<User>(url + '/sso/user', { withCredentials: true })
+    this.http.get<CoreResponse>(url + '/sso/user')
       .subscribe((res) => {
-        if (!res || res['request']['result'] === 'failed') {
+        if (!res || res.request.result === 'failed') {
           this.logoutData(null);
           return;
         }
 
-        if (res['request']['result'] === 'success' && res['body']['user']) {
-          localStorage.setItem('current_user', JSON.stringify(res['body']['user']));
-          this.currentUserSubject.next(res['body']['user']);
+        if (res.request.result === 'success' && res.body.user) {
+          localStorage.setItem('current_user', JSON.stringify(res.body.user));
+          this.currentUserSubject.next(res.body.user);
         }
       });
 
@@ -101,8 +102,8 @@ export class UserService {
     return this.currentUserSubject.value;
   }
 
-  public getUsers(): Observable<User[]> {
-    return this.http.get<User[]>(url + '/users');
+  public getUsers(): Observable<CoreResponse> {
+    return this.http.get<CoreResponse>(url + '/users');
   }
 
   public login() {
@@ -135,7 +136,7 @@ export class UserService {
    ***************************************/
 
   public isStaff() {
-    return this.currentUserValue !== null && this.currentUserValue.group.id > 10;
+    return this.currentUserValue !== null && (this.currentUserValue.groups.primary.id > 10 || this.currentUserValue.groups.secondary.filter(group => group.id > 10).length > 0);
   }
 
   public hasUserAccess() {
@@ -152,7 +153,7 @@ export class UserService {
 
   public isAdminObserve(cb) {
     this.currentUser.subscribe(user => {
-      cb(user !== null && user.group.id > 10);
+      cb(user !== null && user.groups.primary.id > 10);
     });
   }
 
@@ -178,21 +179,24 @@ export class UserService {
     const {sortColumn, sortDirection, pageSize, page, searchTerm} = this._state;
 
     return this.getUsers().pipe(map(res => {
-      if (res['returns'] === 'failed') {
+      if (res.request.result === 'failed') {
         return {users: [], total: 0};
       }
 
+      let us = res.body.users as User[];
+
       // Set name field
-      if (Array.isArray(res)) {
-        res = res.filter(user => {
+      if (Array.isArray(us)) {
+        us = us.filter(user => {
           user.name = user.first_name && user.last_name ? user.first_name + ' ' + user.last_name : user.first_name;
-          user.group_name = user.group.name;
+          user.group_name = user.groups.primary.name;
+          user.pilot_rating = Array.isArray(user.pilot_rating) ? user.pilot_rating.join(', ') : (parseInt(user.pilot_rating.toString()) === 0 ? 'None' : user.pilot_rating.toString());
 
           return user;
         });
 
         // 1. sort
-        let users = sort(res, sortColumn, sortDirection);
+        let users = sort(us, sortColumn, sortDirection);
 
         // 2. filter
         users = users.filter(user => matches(user, searchTerm, this.pipe));

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {Airport} from "../models/airport";
 import {Observable} from "rxjs";
+import {CoreResponse} from "../models/CoreResponse";
 
 const url = 'https://core.vatpac.org';
 
@@ -12,8 +13,8 @@ export class AirportsService {
 
   constructor(private http: HttpClient) { }
 
-  public getAirports(): Observable<Airport> {
-    return this.http.get<Airport>(`${url}/flightData/airports`);
+  public getAirports(): Observable<CoreResponse> {
+    return this.http.get<CoreResponse>(`${url}/flightData/airports`);
   }
 
   public getAirportICAOs() {

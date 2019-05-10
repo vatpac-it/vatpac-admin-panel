@@ -26,6 +26,7 @@ import {httpInterceptor} from "./interceptors/http-interceptor.service";
 import {CanDeactivateGuard} from "./guards/can-deactivate-guard";
 import { AlertComponent } from './components/alert/alert.component';
 import {AlertService} from "./services/alert.service";
+import { ClientsComponent } from './clients/clients.component';
 
 library.add(faCalendarAlt, faTimes);
 
@@ -42,7 +43,8 @@ library.add(faCalendarAlt, faTimes);
     FileUploadComponent,
     SortableHeaderDirective,
     LoginComponent,
-    AlertComponent
+    AlertComponent,
+    ClientsComponent
   ],
   entryComponents: [FileUploadComponent],
   imports: [

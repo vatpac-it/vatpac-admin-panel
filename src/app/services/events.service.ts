@@ -6,6 +6,7 @@ import {Router} from "@angular/router";
 import {SortDirection} from "./sortable-header.directive";
 import {DecimalPipe} from "@angular/common";
 import {debounceTime, delay, map, switchMap, tap} from "rxjs/operators";
+import {CoreResponse} from "../models/CoreResponse";
 
 const url = 'https://core.vatpac.org/events';
 
@@ -86,19 +87,21 @@ export class EventsService {
     this.event.next(event);
   }
 
-  public getEvents(): Observable<Event[]> {
-    return this.http.get<Event[]>(url);
+  public getEvents(): Observable<CoreResponse> {
+    return this.http.get<CoreResponse>(url);
   }
 
   public getEvent(sku: string): Observable<Event> {
-    this.http.get<Event>(url + '/' + sku).subscribe(res => {
-      if (res['returns'] && res['returns'] === 'failed') {
+    this.http.get<CoreResponse>(url + '/' + sku).subscribe((res) => {
+      if (res.request && res.request.result === 'failed') {
         this.router.navigate(['/events']);
       } else {
-        res.start = new Date(res.start);
-        res.end = new Date(res.end);
+        res.body.event = res.body.event as Event;
 
-        this.setEvent(res);
+        res.body.event.start = new Date(res.body.event.start);
+        res.body.event.end = new Date(res.body.event.end);
+
+        this.setEvent(res.body.event);
       }
     });
 
@@ -107,14 +110,16 @@ export class EventsService {
 
   public refreshEvent(): Observable<Event> {
     this.currentEvent.subscribe(event => {
-      this.http.get<Event>(url + '/' + event.sku).subscribe(res => {
-        if (res['returns'] && res['returns'] === 'failed') {
+      this.http.get<CoreResponse>(url + '/' + event.sku).subscribe(res => {
+        if (res.request && res.request.result === 'failed') {
           this.router.navigate(['/events']);
         } else {
-          res.start = new Date(res.start);
-          res.end = new Date(res.end);
+          res.body.event = res.body.event as Event;
 
-          this.setEvent(res);
+          res.body.event.start = new Date(res.body.event.start);
+          res.body.event.end = new Date(res.body.event.end);
+
+          this.setEvent(res.body.event);
         }
       });
     });
@@ -123,15 +128,15 @@ export class EventsService {
   }
 
   public createEvent(event): Observable<any> {
-    return this.http.post(`${url}/create`, event, { withCredentials: true });
+    return this.http.post<CoreResponse>(`${url}/create`, event, { withCredentials: true });
   }
 
   public editEvent(event): Observable<any> {
-    return this.http.post(`${url}/edit`, event, { withCredentials: true });
+    return this.http.post<CoreResponse>(`${url}/edit`, event, { withCredentials: true });
   }
 
   public setPosition(event_sku, cid, icao, position, date, start, end, data_hidden) {
-    return this.http.post(`${url}/${event_sku}/setPosition`, {'icao': icao, 'userCid': cid, 'position': position, 'position_date': date, 'position_start': start, 'position_end': end, 'position_data_hidden': data_hidden});
+    return this.http.post<CoreResponse>(`${url}/${event_sku}/setPosition`, {'icao': icao, 'userCid': cid, 'position': position, 'position_date': date, 'position_start': start, 'position_end': end, 'position_data_hidden': data_hidden});
   }
 
   get events$() { return this._events$.asObservable(); }
@@ -156,11 +161,14 @@ export class EventsService {
     const {sortColumn, sortDirection, pageSize, page, searchTerm} = this._state;
 
     return this.getEvents().pipe(map(res => {
-      if (res['returns'] === 'failed') {
+      if (res.request.result === 'failed') {
         return {events: [], total: 0};
       }
+
+      let e = res.body.events as Event[];
+
       // Set dates to unixtimes
-      res = res.filter(event => {
+      e = e.filter(event => {
         event.start = event.start instanceof Date ? (event.start.getTime()/1000).toString() : (new Date(event.start).getTime()/1000).toString();
         event.end = event.end instanceof Date ? (event.end.getTime()/1000).toString() : (new Date(event.end).getTime()/1000).toString();
         event.published = event.published === 0 ? 'Unpublished' : event.published === 1 ? 'Published - Accepting Applications' : event.published === 2 ? 'Published - Applications Closed' : '';
@@ -169,7 +177,7 @@ export class EventsService {
       });
 
       // 1. sort
-      let events = sort(res, sortColumn, sortDirection);
+      let events = sort(e, sortColumn, sortDirection);
 
       events = events.filter(event => {
         event.start = (new Date(parseInt(event.start as string) * 1000)).toUTCString();

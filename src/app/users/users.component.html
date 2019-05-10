@@ -26,7 +26,7 @@
       <td><ngb-highlight [result]="user.name" [term]="usersService.searchTerm"></ngb-highlight></td>
       <td><ngb-highlight [result]="user.atc_rating" [term]="usersService.searchTerm"></ngb-highlight></td>
       <td><ngb-highlight [result]="user.pilot_rating" [term]="usersService.searchTerm"></ngb-highlight></td>
-      <td><ngb-highlight [result]="user.group.name" [term]="usersService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="user.groups.primary.name" [term]="usersService.searchTerm"></ngb-highlight></td>
     </tr>
     </tbody>
   </table>

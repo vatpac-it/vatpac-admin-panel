@@ -1,0 +1,43 @@
+<div class="container mt-4">
+  <br/>
+
+  <div class="form-group form-inline justify-content-between px-3">
+    <div>
+      Search Clients: <input class="form-control ml-2" type="text" name="searchTerm" [(ngModel)]="clientService.searchTerm"/>
+      <div class="spinner-border ml-4" role="status" *ngIf="clientService.loading$ | async">
+        <span class="sr-only">Loading...</span>
+      </div>
+    </div>
+  </div>
+
+  <table class="table table-striped table-hover">
+    <thead>
+    <tr>
+      <th scope="col" sortable="id" class="selectable" (sort)="onSort($event)">ID</th>
+      <th scope="col" sortable="sku" class="selectable" (sort)="onSort($event)">SKU</th>
+      <th scope="col" sortable="name" class="selectable" (sort)="onSort($event)">Name</th>
+      <th scope="col" sortable="description" class="selectable" (sort)="onSort($event)">Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr class="selectable" *ngFor="let client of clients$ | async" (click)="router.navigate(['/clients', client.sku])">
+      <td><ngb-highlight [result]="client.id" [term]="clientService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="client.sku" [term]="clientService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="client.name" [term]="clientService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="client.description" [term]="clientService.searchTerm"></ngb-highlight></td>
+    </tr>
+    </tbody>
+  </table>
+
+  <div class="d-flex justify-content-between p-2">
+    <ngb-pagination
+      [collectionSize]="total$ | async" [(page)]="clientService.page" [pageSize]="clientService.pageSize">
+    </ngb-pagination>
+
+    <select class="custom-select w-auto" name="pageSize" [(ngModel)]="clientService.pageSize">
+      <option [ngValue]="5">5 Clients per Page</option>
+      <option [ngValue]="10">10 Clients per Page</option>
+      <option [ngValue]="15">15 Clients per Page</option>
+    </select>
+  </div>
+</div>

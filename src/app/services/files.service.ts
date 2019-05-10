@@ -3,6 +3,7 @@ import {HttpClient, HttpEventType, HttpRequest, HttpResponse} from "@angular/com
 import {Observable, Subject} from "rxjs";
 import {DomSanitizer} from "@angular/platform-browser";
 import {map} from "rxjs/operators";
+import {CoreResponse} from "../models/CoreResponse";
 
 const url = 'https://core.vatpac.org/files';
 
@@ -27,7 +28,7 @@ export class FilesService {
   }
 
   public deleteImage(id: number | string) {
-    return this.http.delete(`${url}/${id}`);
+    return this.http.delete<CoreResponse>(`${url}/${id}`);
   }
 
   public upload(files: Set<{preview: string | ArrayBuffer, file: File}>):
@@ -62,15 +63,16 @@ export class FilesService {
           // pass the percentage into the progress-stream
           progress.next(percentDone);
         } else if (event instanceof HttpResponse) {
+          let res = event.body as CoreResponse;
 
           // Close the progress-stream if we get an answer form the API
           // The upload is complete
-          fileID.next(event.body['id']);
+          fileID.next(res.body.item.id);
           fileID.complete();
-          if (event.body['status'] !== 200) {
-            progress.error('Failed');
-          } else {
+          if (res.request.result === 'success') {
             progress.complete();
+          } else {
+            progress.error('Failed');
           }
         }
       });

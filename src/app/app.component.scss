@@ -1,4 +1,9 @@
-html {
-    margin-bottom: 0px !important;
+.page {
+  min-height: 100%;
+  position: relative;
+  overflow: hidden;
 
+  .body {
+    margin-bottom: 200px;
+  }
 }
