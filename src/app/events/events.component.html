@@ -16,7 +16,7 @@
     <tr>
       <th scope="col">#</th>
       <th scope="col" sortable="title" class="selectable" (sort)="onSort($event)">Title</th>
-      <th scope="col" sortable="subTitle" class="selectable" (sort)="onSort($event)">SubTitle</th>
+      <th scope="col" sortable="subtitle" class="selectable" (sort)="onSort($event)">SubTitle</th>
       <th scope="col" sortable="start" class="selectable" (sort)="onSort($event)">Start</th>
       <th scope="col" sortable="end" class="selectable" (sort)="onSort($event)">End</th>
       <th scope="col" sortable="published" class="selectable" (sort)="onSort($event)">Published</th>
@@ -28,7 +28,7 @@
       <td>
         <ngb-highlight [result]="event.title" [term]="eventsService.searchTerm"></ngb-highlight>
       </td>
-      <td><ngb-highlight [result]="event.subTitle" [term]="eventsService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="event.subtitle" [term]="eventsService.searchTerm"></ngb-highlight></td>
       <td><ngb-highlight [result]="event.start" [term]="eventsService.searchTerm"></ngb-highlight></td>
       <td><ngb-highlight [result]="event.end" [term]="eventsService.searchTerm"></ngb-highlight></td>
       <td><ngb-highlight [result]="event.published" [term]="eventsService.searchTerm"></ngb-highlight></td>

@@ -1,10 +1,12 @@
-import {Component, OnInit} from '@angular/core';
-import {Event} from "../../../models/Event";
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Event, EventForm} from "../../../models/Event";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {AirportsService} from "../../../services/airports.service";
 import {EventsService} from "../../../services/events.service";
-import {Observable, of} from "rxjs";
+import {Observable, of, Subscription} from "rxjs";
 import {catchError, debounceTime, distinctUntilChanged, map, switchMap} from "rxjs/operators";
+import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {CoreResponse} from "../../../models/CoreResponse";
 
 
 @Component({
@@ -12,25 +14,31 @@ import {catchError, debounceTime, distinctUntilChanged, map, switchMap} from "rx
   templateUrl: './atcapp.component.html',
   styleUrls: ['./atcapp.component.scss']
 })
-export class AtcappComponent implements OnInit {
+export class AtcappComponent implements OnInit, OnDestroy {
 
-  model: Event;
-
-  objectKeys = Object.keys;
-  typeof = function(el) {
-    return typeof el;
-  };
+  event: FormGroup = this.fb.group(new EventForm());
+  eventSub: Subscription;
 
   searchFailed = false;
 
-  positions: {icao: string, position: string}[] = [];
-
-  constructor(private airportService: AirportsService, private _modalService: NgbModal, private eventsService: EventsService) {}
+  constructor(private airportService: AirportsService, private _modalService: NgbModal, private eventsService: EventsService, private fb: FormBuilder) {}
 
   ngOnInit() {
-    this.eventsService.currentEvent.subscribe(data => {
-      this.model = data;
+    this.eventSub = this.eventsService.currentEvent.subscribe(data => {
+      this.event = data;
     });
+  }
+
+  ngOnDestroy() {
+    this.eventSub.unsubscribe()
+  }
+
+  get positions() {
+    return this.event.controls.available as FormArray;
+  }
+
+  get shiftLength() {
+    return this.event.controls.shiftLength;
   }
 
   search = (text$: Observable<string>) =>
@@ -38,82 +46,33 @@ export class AtcappComponent implements OnInit {
       debounceTime(300),
       distinctUntilChanged(),
       switchMap(term =>
-        this.airportService.getAirportICAOs().pipe(
-          map(res => {
-            if (Array.isArray(res)) {
-              this.searchFailed = false;
-              return (term === '' ? res
-                : res.filter(v => v.toLowerCase().startsWith(term.toLowerCase()))).slice(0, 10);
-            }
+        this.airportService.getAirportPositions().pipe(
+          map(icaos => {
+            if (icaos === []) this.searchFailed = true;
+
+            return (term === '' ? icaos : icaos.filter(v => v.toLowerCase().startsWith(term.toLowerCase()))).slice(0, 10)
           }),
-          catchError(() => {
-            this.searchFailed = true;
-            return of([]);
-          })
         )
       ),
     );
 
   addIcao() {
-    if (Object.keys(this.model.positions).length < 6) {
-      this.model.positions[''] = {};
-    }
+    this.positions.push(
+      new FormControl('', [Validators.maxLength(10), Validators.required])
+    );
   }
 
-  addCallsign(icao: string) {
-    if (this.model.positions && this.model.positions[icao]) {
-      this.model.positions[icao][''] = {};
-
-      this.eventsService.setEvent(this.model);
-    }
-  }
-
-  removeIcao(icao: string) {
-    if (this.model.positions && this.model.positions[icao]) {
-      delete this.model.positions[icao];
-
-      this.eventsService.setEvent(this.model);
-    }
-  }
-
-  removeCallsign(icao: string, callsign: string) {
-    if (this.model.positions && this.model.positions[icao] && this.model.positions[icao][callsign]) {
-      delete this.model.positions[icao][callsign];
-
-      this.eventsService.setEvent(this.model);
-    }
+  removeIcao(i) {
+    this.positions.removeAt(i);
   }
 
   confirmClear(content) {
     if (this.positions.length > 0) {
       this._modalService.open(content, {ariaLabelledBy: 'confirm-delete-modal'}).result.then((result) => {
         if (result === 'okClick') {
-          this.positions = [];
-          this.model.positions = {};
-
-          this.eventsService.setEvent(this.model);
+          this.positions.clear();
         }
       });
-    }
-  }
-
-  setIcao(icao: string, text) {
-    text = text.target.value;
-    if (this.model.positions && this.model.positions[icao] && !this.model.positions[text]) {
-      this.model.positions[text] = this.model.positions[icao];
-      delete this.model.positions[icao];
-
-      this.eventsService.setEvent(this.model);
-    }
-  }
-
-  setCallsign(icao: string, callsign: string, text) {
-    text = text.target.value;
-    if (this.model.positions && this.model.positions[icao] && this.model.positions[icao][callsign] && !this.model.positions[icao][text]) {
-      this.model.positions[icao][text] = this.model.positions[icao][callsign];
-      delete this.model.positions[icao][callsign];
-
-      this.eventsService.setEvent(this.model);
     }
   }
 }

@@ -1,9 +1,9 @@
 import {Component, OnInit, QueryList, ViewChildren} from '@angular/core';
 import {Observable} from "rxjs";
-import {SortableHeaderDirective, SortEvent} from "../services/sortable-header.directive";
+import {SortableHeaderDirective, SortEvent} from "../sortable-header/sortable-header.directive";
 import {Client} from "../models/Client";
 import {ClientService} from "../services/client.service";
-import {Router} from "@angular/router";
+import {NavigationEnd, Router} from "@angular/router";
 
 @Component({
   selector: 'app-clients',
@@ -23,6 +23,11 @@ export class ClientsComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.router.events.subscribe(e => {
+      if (e instanceof NavigationEnd && e.url.startsWith('/clients')) {
+        this.clientService.refresh();
+      }
+    });
   }
 
   onSort({column, direction}: SortEvent) {

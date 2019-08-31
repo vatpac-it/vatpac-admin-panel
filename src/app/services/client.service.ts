@@ -1,5 +1,5 @@
 import {Injectable, PipeTransform} from '@angular/core';
-import {SortDirection} from "./sortable-header.directive";
+import {SortDirection} from "../sortable-header/sortable-header.directive";
 import {Client} from "../models/Client";
 import {BehaviorSubject, Observable, Subject} from "rxjs";
 import {User} from "../models/User";
@@ -7,6 +7,7 @@ import {HttpClient} from "@angular/common/http";
 import {DecimalPipe} from "@angular/common";
 import {debounceTime, delay, map, switchMap, tap} from "rxjs/operators";
 import {CoreResponse} from "../models/CoreResponse";
+import {Event} from "../models/Event";
 
 const url = 'https://core.vatpac.org';
 
@@ -39,8 +40,7 @@ function sort(clients: Client[], column: string, direction: string): Client[] {
 }
 
 function matches(client: Client, term: string, pipe: PipeTransform) {
-  return pipe.transform(client.id).includes(term)
-    || client.sku.toLowerCase().includes(term)
+  return client.sku.toLowerCase().includes(term)
     || client.name.toLowerCase().includes(term)
     || client.description.toString().toLowerCase().includes(term);
 }
@@ -52,7 +52,7 @@ export class ClientService {
 
   private _loading$ = new BehaviorSubject<boolean>(true);
   private _search$ = new Subject<void>();
-  private _clients$ = new BehaviorSubject<User[]>([]);
+  private _clients$ = new BehaviorSubject<Client[]>([]);
   private _total$ = new BehaviorSubject<number>(0);
 
   private _state: State = {
@@ -82,6 +82,31 @@ export class ClientService {
     return this.http.get<CoreResponse>(url + '/client');
   }
 
+  public getClient(sku: string): Observable<CoreResponse> {
+    return this.http.get<CoreResponse>(url + '/client/' + sku);
+  }
+
+  public deleteClient(sku: string): Observable<CoreResponse> {
+    return this.http.delete<CoreResponse>(url + '/client/' + sku);
+  }
+
+  public getClientVersion(sku: string): Observable<CoreResponse> {
+    return this.http.get<CoreResponse>(url + '/client/' + sku + '/version');
+  }
+
+  public deleteClientVersion(sku: string, version: string): Observable<CoreResponse> {
+    return this.http.post<CoreResponse>(url + '/client/' + sku + '/delete', {version: version});
+  }
+
+  public createClient(sku: string, name: string, description: string): Observable<CoreResponse> {
+    return this.http.post<CoreResponse>(url + '/client/create', {sku: sku, name: name, description: description});
+  }
+
+  public updateClient(sku: string, name: string, description: string): Observable<CoreResponse> {
+    return this.http.patch<CoreResponse>(url + '/client/' + sku, {sku: sku, name: name, description: description});
+  }
+
+
   get clients$() { return this._clients$.asObservable(); }
   get total$() { return this._total$.asObservable(); }
   get loading$() { return this._loading$.asObservable(); }
@@ -108,12 +133,12 @@ export class ClientService {
         return {clients: [], total: 0};
       }
 
-      let us = res.body.clients as User[];
+      let c = res.body.clients as Client[];
 
       // Set name field
-      if (Array.isArray(us)) {
+      if (Array.isArray(c)) {
         // 1. sort
-        let clients = sort(us, sortColumn, sortDirection);
+        let clients = sort(c, sortColumn, sortDirection);
 
         // 2. filter
         clients = clients.filter(client => matches(client, searchTerm, this.pipe));
@@ -127,5 +152,9 @@ export class ClientService {
         return {clients: [], total: 0};
       }
     }));
+  }
+
+  public refresh() {
+    this._search$.next();
   }
 }

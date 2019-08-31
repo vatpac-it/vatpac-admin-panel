@@ -1,0 +1,52 @@
+<div class="container mt-4">
+  <br/>
+
+  <div class="form-group form-inline px-3">
+    <div class="my-3 col-12 col-md-5">
+      <div class="input-group">
+        <input class="form-control ml-2" type="text" name="searchTerm" placeholder="Search Permissions" [(ngModel)]="permsService.searchTerm"/>
+        <div class="input-group-append" *ngIf="permsService.loading$ | async">
+          <div class="input-group-text">
+            <div class="spinner-border spinner-border-sm" role="status">
+              <span class="sr-only">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row justify-content-center justify-content-md-end my-3 col-12 col-md-7">
+      <button class="btn btn-primary mx-2" [routerLink]="['./create']">Create Permission</button>
+    </div>
+  </div>
+
+  <table class="table table-striped table-hover">
+    <thead>
+    <tr>
+      <th scope="col" sortable="sku" class="selectable" (sort)="onSort($event)">SKU</th>
+      <th scope="col" sortable="name" class="selectable" (sort)="onSort($event)">Name</th>
+      <th scope="col" sortable="description" class="selectable" (sort)="onSort($event)">Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr class="selectable" *ngFor="let perm of perms$ | async" (click)="router.navigate(['/access/perms', perm.sku])">
+      <td><ngb-highlight [result]="perm.sku" [term]="permsService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="perm.name" [term]="permsService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="perm.description" [term]="permsService.searchTerm"></ngb-highlight></td>
+    </tr>
+    </tbody>
+  </table>
+
+  <p *ngIf="(perms$ | async).length === 0" class="text-center">There are no permissions.</p>
+
+  <div class="d-flex justify-content-between p-2">
+    <ngb-pagination
+      [collectionSize]="total$ | async" [(page)]="permsService.page" [pageSize]="permsService.pageSize">
+    </ngb-pagination>
+
+    <select class="custom-select w-auto" name="pageSize" [(ngModel)]="permsService.pageSize">
+      <option [ngValue]="5">5 Perms per Page</option>
+      <option [ngValue]="10">10 Perms per Page</option>
+      <option [ngValue]="15">15 Perms per Page</option>
+    </select>
+  </div>
+</div>

@@ -1,55 +1,111 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {EventsService} from "../../../services/events.service";
-import {Event} from "../../../models/Event";
+import {Event, EventForm} from "../../../models/Event";
 import {ActivatedRoute} from "@angular/router";
+import {AlertService} from "../../../services/alert.service";
+import {Form, FormArray, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {Subscription} from "rxjs";
+import {CoreResponse} from "../../../models/CoreResponse";
 
 @Component({
   selector: 'app-applications',
   templateUrl: './applications.component.html',
   styleUrls: ['./applications.component.scss']
 })
-export class ApplicationsComponent implements OnInit {
+export class ApplicationsComponent implements OnInit, OnDestroy {
 
-  model: Event;
+  event: FormGroup = this.fb.group(new EventForm());
+  eventSub: Subscription;
 
-  objectKeys = Object.keys;
+  selectedPositions: {date: Date, user_id: string, position: string}[] = [];
 
-  constructor(private eventsService: EventsService, private activeRoute: ActivatedRoute) { }
+  loading: {userId: string, date: Date}[] = [];
+  success: {userId: string, date: Date}[] = [];
+
+  constructor(private eventsService: EventsService, private activeRoute: ActivatedRoute, private alertService: AlertService, private fb: FormBuilder) { }
 
   ngOnInit() {
-    this.eventsService.currentEvent.subscribe(data => {
-      this.model = data;
+    this.eventSub = this.eventsService.currentEvent.subscribe(data => {
+      this.event = data;
 
-      this.setAssigned();
+      this.positions.controls.forEach(pos => {
+        let p = pos as FormGroup;
+        let user = p.controls.user as FormGroup;
+        const ps = p.controls.position.value;
+        const icao = (p.controls.airport as FormGroup).controls.icao.value;
+
+        this.selectedPositions.push({date: p.controls.date.value, user_id: user.controls._id.value, position: icao + (icao.includes('_') ? '-' : '_') + ps})
+      });
     });
   }
 
-  setAssigned() {
-    // Airport
-    for (let airport in this.model.positions) {
-      if (this.model.positions.hasOwnProperty(airport)) {
+  ngOnDestroy() {
+    this.eventSub.unsubscribe()
+  }
 
-        // Postion
-        for (let position in this.model.positions[airport]) {
-          if (this.model.positions[airport].hasOwnProperty(position)) {
+  get applications() {
+    return this.event.controls.applications as FormArray;
+  }
 
-            // Date
-            for (let date in this.model.positions[airport][position]) {
-              if (this.model.positions[airport][position].hasOwnProperty(date)) {
+  get available() {
+    return this.event.controls.available as FormArray;
+  }
 
-                // Time
-                for (let time of this.model.positions[airport][position][date]) {
+  get positions() {
+    return this.event.controls.positions as FormArray;
+  }
 
-                  if (typeof time !== 'undefined') {
-                    this.model.applications[time.user].dates[date][time.start].assigned = position;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+  getApplicationGroup(i) {
+    return this.applications.controls[i] as FormGroup;
+  }
+
+  getUserGroup(group) {
+    return group.controls.user as FormGroup;
+  }
+
+  selected(date, user_id) {
+    // console.log(positions.controls);
+    let ps = this.selectedPositions.filter(pos => {
+      return pos.date.getTime() === date.getTime() && pos.user_id === user_id;
+    });
+
+    return ps.length > 0 ? ps[0].position : null;
+  }
+
+  // setAssigned() {
+  //   // Airport
+  //   for (let airport in this.model.positions) {
+  //     if (this.model.positions.hasOwnProperty(airport)) {
+  //
+  //       // Postion
+  //       for (let position in this.model.positions[airport]) {
+  //         if (this.model.positions[airport].hasOwnProperty(position)) {
+  //
+  //           // Date
+  //           for (let date in this.model.positions[airport][position]) {
+  //             if (this.model.positions[airport][position].hasOwnProperty(date)) {
+  //
+  //               // Time
+  //               for (let time of this.model.positions[airport][position][date]) {
+  //
+  //                 if (typeof time !== 'undefined' && Object.keys(this.model.applications).length > 0) {
+  //                   this.model.applications[time.user].dates[date][time.start].assigned = position;
+  //                 }
+  //               }
+  //             }
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+
+  isLoading(userId, date) {
+    return this.loading.some(l => l.userId === userId && l.date === date);
+  }
+
+  isSuccess(userId, date) {
+    return this.success.some(l => l.userId === userId && l.date === date);
   }
 
   formatDate(date: string): string {
@@ -58,55 +114,40 @@ export class ApplicationsComponent implements OnInit {
     return d.getUTCDate() + '/' + d.getUTCMonth() + '/' + d.getUTCFullYear();
   }
 
-  assignPosition(cid, user, date, start, icao, position, data_hidden) {
-    if (cid && date && start) {
-      let end;
+  formatTime(date: string): string {
+    let d = new Date(date);
 
-      if (icao && position && position !== 'None') {
-        const ts = start.toString().split(':');
-        end = new Date(Date.UTC(0, 0, 0, parseInt(ts[0]), parseInt(ts[1]), parseInt(ts[2])));
-        end = new Date(end.getTime() + this.model.shiftLength * 60 * 1000);
-        end = end.toISOString().substr(11, 8);
+    return (d.getUTCHours() < 10 ? '0' + d.getUTCHours() : d.getUTCHours()) + ':' + (d.getUTCMinutes() < 10 ? '0' + d.getUTCMinutes() : d.getUTCMinutes());
+  }
 
-        if (this.model.positions[icao][position][date]) {
-          this.model.positions[icao][position][date].forEach((time, i) => {
-            if (time.start === start) {
-              this.model.positions[icao][position][date].splice(i, 1);
-              this.model.applications[time.user].dates[date][start].assigned = null;
-            }
-          });
+  assignPosition(userId, date, position, hidden) {
+    if (userId && date && !this.isLoading(userId, date)) {
+      this.loading.push({userId: userId, date: date});
+
+      this.eventsService.setPosition(this.event.controls.sku.value, userId, position, date, hidden).subscribe((res) => {
+        res = new CoreResponse(res);
+        if (!res.success()) {
+          this.alertService.add('danger', 'Error: Could not assign position');
         } else {
-          this.model.positions[icao][position][date] = [];
+          if (position === null) {
+            this.selectedPositions.splice(this.selectedPositions.findIndex(pos => pos.date.getTime() === date.getTime() && pos.user_id === userId), 1);
+          } else {
+            this.selectedPositions.push({date: date, user_id: userId, position: position});
+          }
+          this.success.push({userId: userId, date: date});
+
+          let this$ = this;
+          setTimeout(function () {
+            this$.success = this$.success.filter(s => s.userId !== userId && s.date !== date);
+          }, 2000);
         }
 
-        this.model.positions[icao][position][date].push({user: cid, start: start, end: end});
-        this.model.applications[cid].dates[date][start].assigned = position;
-      } else {
-        Object.keys(this.model.positions).forEach((ic) => {
-          Object.keys(this.model.positions[ic]).forEach((pos) => {
-            if (this.model.positions[ic][pos][date]) {
-              this.model.positions[ic][pos][date].forEach((time, i) => {
-                if (time.start === start && time.user === cid) {
-                  this.model.positions[ic][pos][date].splice(i, 1);
-                  this.model.applications[time.user].dates[date][start].assigned = null;
-
-                  icao = ic;
-                  position = pos;
-                  end = null;
-                }
-              });
-            }
-          });
-        });
-      }
-
-      this.eventsService.setPosition(this.model.sku, cid, icao, position, date, start, end, data_hidden).subscribe((data) => {
-        if (typeof data['request'] !== 'undefined' && data['request']['result'] === 'success') {
-          console.log('SET');
-        }
+        this.loading = this.loading.filter(l => l.userId !== userId && l.date !== date);
+      }, error => {
+        this.alertService.add('danger', 'Error: Could not assign position');
       });
 
-      this.eventsService.setEvent(this.model);
+      // this.eventsService.setEvent(this.model);
     }
   }
 

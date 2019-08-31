@@ -16,7 +16,10 @@
           <a class="nav-link" routerLink="/clients" routerLinkActive="active">Clients</a>
         </li>
         <li *ngIf="userService.hasUserAccess()" class="nav-item">
-          <a class="nav-link" routerLink="/users" routerLinkActive="active">Users</a>
+          <a class="nav-link" routerLink="/access" routerLinkActive="active">Access</a>
+        </li>
+        <li *ngIf="userService.hasDataAccess()" class="nav-item">
+          <a class="nav-link" routerLink="/data" routerLinkActive="active">Data</a>
         </li>
         <li class="nav-item">
           <button class="btn btn-link nav-link text-danger w-100" (click)="logout()">Log Out</button>

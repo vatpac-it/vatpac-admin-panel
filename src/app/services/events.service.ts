@@ -1,12 +1,14 @@
 import {Injectable, PipeTransform} from '@angular/core';
 import {BehaviorSubject, Observable, of, Subject} from "rxjs";
 import {HttpClient} from "@angular/common/http";
-import {Event} from "../models/Event";
+import {Event, EventForm} from "../models/Event";
 import {Router} from "@angular/router";
-import {SortDirection} from "./sortable-header.directive";
+import {SortDirection} from "../sortable-header/sortable-header.directive";
 import {DecimalPipe} from "@angular/common";
 import {debounceTime, delay, map, switchMap, tap} from "rxjs/operators";
 import {CoreResponse} from "../models/CoreResponse";
+import {FormBuilder, FormGroup} from "@angular/forms";
+import {AlertService} from "./alert.service";
 
 const url = 'https://core.vatpac.org/events';
 
@@ -40,7 +42,7 @@ function sort(events: Event[], column: string, direction: string): Event[] {
 
 function matches(event: Event, term: string, pipe: PipeTransform) {
   return event.title.toLowerCase().includes(term)
-    || event.subTitle.toLowerCase().includes(term)
+    || event.subtitle.toLowerCase().includes(term)
     || (event.start as string).toLowerCase().includes(term)
     || (event.end as string).toLowerCase().includes(term);
 }
@@ -50,14 +52,9 @@ function matches(event: Event, term: string, pipe: PipeTransform) {
 })
 export class EventsService {
 
-  private event: BehaviorSubject<Event> = new BehaviorSubject(new Event());
-  currentEvent = this.event.asObservable();
-
-  private _loading$ = new BehaviorSubject<boolean>(true);
+  private event: BehaviorSubject<FormGroup | undefined> = new BehaviorSubject(this.fb.group(new EventForm()));
+  currentEvent: Observable<FormGroup> = this.event.asObservable();
   private _search$ = new Subject<void>();
-  private _events$ = new BehaviorSubject<Event[]>([]);
-  private _total$ = new BehaviorSubject<number>(0);
-
   private _state: State = {
     page: 1,
     pageSize: 4,
@@ -66,8 +63,8 @@ export class EventsService {
     sortDirection: ''
   };
 
-  constructor(private http: HttpClient, private router: Router, private pipe: DecimalPipe) {
-    setTimeout(() => this.setEvent(new Event()), 0);
+  constructor(private http: HttpClient, private router: Router, private pipe: DecimalPipe, private fb: FormBuilder, private alertService: AlertService) {
+    // setTimeout(() => this.setEvent(new Event()), 0);
 
     this._search$.pipe(
       tap(() => this._loading$.next(true)),
@@ -83,74 +80,75 @@ export class EventsService {
     this._search$.next();
   }
 
-  public setEvent(event: Event) {
-    this.event.next(event);
-  }
+  private _loading$ = new BehaviorSubject<boolean>(true);
+
+  get loading$() { return this._loading$.asObservable(); }
+
+  private _events$ = new BehaviorSubject<Event[]>([]);
+
+  get events$() { return this._events$.asObservable(); }
+
+  private _total$ = new BehaviorSubject<number>(0);
+
+  get total$() { return this._total$.asObservable(); }
+
+  get page() { return this._state.page; }
+
+  set page(page: number) { this._set({page}); }
+
+  get pageSize() { return this._state.pageSize; }
+
+  set pageSize(pageSize: number) { this._set({pageSize}); }
+
+  get searchTerm() { return this._state.searchTerm; }
+
+  set searchTerm(searchTerm: string) { this._set({searchTerm}); }
+
+  set sortColumn(sortColumn: string) { this._set({sortColumn}); }
+
+  set sortDirection(sortDirection: SortDirection) { this._set({sortDirection}); }
 
   public getEvents(): Observable<CoreResponse> {
     return this.http.get<CoreResponse>(url);
   }
 
-  public getEvent(sku: string): Observable<Event> {
+  public getEvent(sku: string): Observable<FormGroup> {
     this.http.get<CoreResponse>(url + '/' + sku).subscribe((res) => {
-      if (res.request && res.request.result === 'failed') {
+      res = new CoreResponse(res);
+      if (!res.success()) {
+        this.alertService.add('danger', 'Error getting event. Please try again later.');
         this.router.navigate(['/events']);
       } else {
-        res.body.event = res.body.event as Event;
+        let event = res.body.event as Event;
 
-        res.body.event.start = new Date(res.body.event.start);
-        res.body.event.end = new Date(res.body.event.end);
+        event.start = new Date(res.body.event.start);
+        event.end = new Date(res.body.event.end);
 
-        this.setEvent(res.body.event);
+        this.event.next(this.fb.group(new EventForm(event)));
       }
+    }, error => {
+      this.alertService.add('danger', 'Error getting event. Please try again later.');
+      this.router.navigate(['/events']);
     });
 
     return this.currentEvent;
   }
 
-  public refreshEvent(): Observable<Event> {
-    this.currentEvent.subscribe(event => {
-      this.http.get<CoreResponse>(url + '/' + event.sku).subscribe(res => {
-        if (res.request && res.request.result === 'failed') {
-          this.router.navigate(['/events']);
-        } else {
-          res.body.event = res.body.event as Event;
-
-          res.body.event.start = new Date(res.body.event.start);
-          res.body.event.end = new Date(res.body.event.end);
-
-          this.setEvent(res.body.event);
-        }
-      });
-    });
-
-    return this.currentEvent;
+  public deleteEvent(sku): Observable<any> {
+    return this.http.delete(`${url}/${sku}`, { withCredentials: true });
   }
 
   public createEvent(event): Observable<any> {
     return this.http.post<CoreResponse>(`${url}/create`, event, { withCredentials: true });
   }
 
-  public editEvent(event): Observable<any> {
-    return this.http.post<CoreResponse>(`${url}/edit`, event, { withCredentials: true });
+  public editEvent(id, event): Observable<any> {
+    return this.http.post<CoreResponse>(`${url}/${id}`, event, { withCredentials: true });
   }
 
-  public setPosition(event_sku, cid, icao, position, date, start, end, data_hidden) {
-    return this.http.post<CoreResponse>(`${url}/${event_sku}/setPosition`, {'icao': icao, 'userCid': cid, 'position': position, 'position_date': date, 'position_start': start, 'position_end': end, 'position_data_hidden': data_hidden});
+  public setPosition(sku, userId, position, date, hidden) {
+    return this.http.post<CoreResponse>(`${url}/${sku}/setPosition`, {userId: userId, position: position, date: date, hidden: hidden});
   }
-
-  get events$() { return this._events$.asObservable(); }
-  get total$() { return this._total$.asObservable(); }
-  get loading$() { return this._loading$.asObservable(); }
-  get page() { return this._state.page; }
-  get pageSize() { return this._state.pageSize; }
-  get searchTerm() { return this._state.searchTerm; }
-
-  set page(page: number) { this._set({page}); }
-  set pageSize(pageSize: number) { this._set({pageSize}); }
-  set searchTerm(searchTerm: string) { this._set({searchTerm}); }
-  set sortColumn(sortColumn: string) { this._set({sortColumn}); }
-  set sortDirection(sortDirection: SortDirection) { this._set({sortDirection}); }
 
   private _set(patch: Partial<State>) {
     Object.assign(this._state, patch);
@@ -168,7 +166,7 @@ export class EventsService {
       let e = res.body.events as Event[];
 
       // Set dates to unixtimes
-      e = e.filter(event => {
+      e = e.map(event => {
         event.start = event.start instanceof Date ? (event.start.getTime()/1000).toString() : (new Date(event.start).getTime()/1000).toString();
         event.end = event.end instanceof Date ? (event.end.getTime()/1000).toString() : (new Date(event.end).getTime()/1000).toString();
         event.published = event.published === 0 ? 'Unpublished' : event.published === 1 ? 'Published - Accepting Applications' : event.published === 2 ? 'Published - Applications Closed' : '';
@@ -179,7 +177,7 @@ export class EventsService {
       // 1. sort
       let events = sort(e, sortColumn, sortDirection);
 
-      events = events.filter(event => {
+      events = events.map(event => {
         event.start = (new Date(parseInt(event.start as string) * 1000)).toUTCString();
         event.end = (new Date(parseInt(event.end as string) * 1000)).toUTCString();
 

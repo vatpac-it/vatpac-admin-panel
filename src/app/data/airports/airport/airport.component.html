@@ -1,0 +1,164 @@
+<div class="container mt-4" [formGroup]="airport">
+  <div class="card">
+    <div class="card-header">
+      {{airport.controls.icao.value}}
+    </div>
+    <div class="card-body">
+      <div class="form-group">
+        <label>ICAO</label>
+        <input type="text" class="form-control" placeholder="YPAD" formControlName="icao">
+      </div>
+      <div class="form-group">
+        <label>AP Name</label>
+        <input type="text" class="form-control" placeholder="Adelaide" formControlName="apName">
+      </div>
+      <div class="row">
+        <div class="form-group col-12 col-md-4">
+          <label>City</label>
+          <input type="text" class="form-control" placeholder="Adelaide" formControlName="city">
+        </div>
+        <div class="form-group col-12 col-md-4">
+          <label>Country</label>
+          <input type="text" class="form-control" placeholder="AU" formControlName="country">
+        </div>
+        <div class="form-group col-12 col-md-4">
+          <label>FIR</label>
+          <input type="text" class="form-control" placeholder="YPAD" formControlName="fir">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Latitude</label>
+        <input type="number" class="form-control" placeholder="-34.9451" formControlName="lat">
+      </div>
+      <div class="form-group">
+        <label>Longitude</label>
+        <input type="number" class="form-control" placeholder="138.5305" formControlName="lon">
+      </div>
+      <div class="form-group">
+        <label>AP Pax</label>
+        <input type="number" class="form-control" placeholder="150" formControlName="apPax">
+      </div>
+      <div class="form-group">
+        <label>AP Number</label>
+        <input type="number" class="form-control" placeholder="2" formControlName="apNo">
+      </div>
+      <div class="form-group">
+        <label>CTF Pax</label>
+        <input type="number" class="form-control" placeholder="0" formControlName="ctfPax">
+      </div>
+      <div class="form-group">
+        <label>CTF Team</label>
+        <input type="number" class="form-control" placeholder="4" formControlName="ctfTeam">
+      </div>
+      <div class="form-group">
+        <label>CTF Protect</label>
+        <div class="w-100">
+          <label class="switch-primary">
+            <input type="checkbox" class="switch switch-bootstrap status" formControlName="ctfProtect">
+            <span><fa-icon [icon]="airport.controls.ctfProtect.value ? 'check' : 'times'"></fa-icon></span>
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Rating Min</label>
+        <input type="number" class="form-control" placeholder="1" formControlName="ratingMin">
+      </div>
+      <div class="form-group">
+        <label>Rating Max</label>
+        <input type="number" class="form-control" placeholder="1.1" formControlName="ratingMax">
+      </div>
+      <div class="form-group">
+        <label>AP Pax BL</label>
+        <input type="number" class="form-control" placeholder="3000" formControlName="apPaxBL">
+      </div>
+      <div class="form-group">
+        <label>SD Ratio</label>
+        <input type="number" class="form-control" placeholder="0.265" formControlName="sdRatio">
+      </div>
+      <div class="form-group">
+        <label>SD Act</label>
+        <input type="number" class="form-control" placeholder="-2204" formControlName="sdAct">
+      </div>
+    </div>
+  </div>
+  <br>
+  <div class="card">
+    <div class="card-header">
+      Stations
+    </div>
+    <div class="card-body">
+      <p>Stations must be in the format either <strong>TWR</strong>, <strong>E_APP</strong> or <strong>WOL_CTR</strong> and have a maximum length of <strong>10</strong> characters. Any other formats will be filtered out and not saved.</p>
+      <div class="container-fluid bg-light px-3 py-2">
+        <button class="btn btn-primary btn-sm" (click)="addStation()">Add station</button>
+        <button class="ml-3 btn btn-danger btn-sm" [disabled]="stations.length === 0" (click)="confirmClear(confirmClearModal)">Clear all stations</button>
+      </div>
+      <br>
+
+      <table class="table table-striped" formArrayName="stations">
+        <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Available</th>
+          <th scope="col">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <ng-container *ngFor="let station of stations.controls; let i = index">
+          <tr class="bg-darklight" [formGroup]="station">
+            <th scope="row" class="w-100">
+              <input
+                type="text"
+                placeholder="TWR"
+                class="form-control text-uppercase"
+                formControlName="station"
+                maxlength="10"
+                aria-label="Station"
+              />
+            </th>
+            <td>
+              <label class="switch-primary tabled-switch">
+                <input type="checkbox" class="switch switch-bootstrap status" formControlName="available">
+                <span><fa-icon [icon]="station.controls.available.value ? 'check' : 'times'"></fa-icon></span>
+              </label>
+            </td>
+            <td>
+              <button class="btn btn-link text-danger" (click)="removeStation(i)">
+                <fa-icon [icon]="'trash'"></fa-icon>
+              </button>
+            </td>
+          </tr>
+        </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="row justify-content-center m-4">
+    <button class="btn btn-outline-primary btn-lg d-block col-lg-4 col-md-6 col-sm-10" type="submit" (click)="submitAirport()" [disabled]="loading$ || !canSubmit$ || !airport.valid">
+      <span *ngIf="!loading$">{{submitTxt}}</span>
+      <span *ngIf="loading$" class="spinner-border spinner-border-sm" role="status" aria-hidden="true">
+            <span class="sr-only">Loading...</span>
+          </span>
+    </button>
+  </div>
+</div>
+
+
+<ng-template #confirmClearModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-title">Confirm delete all stations?</h4>
+    <button type="button" class="close" aria-label="Close button" aria-describedby="modal-title" (click)="modal.dismiss('crossClick')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to delete <span class="text-primary">ALL</span> stations?</strong></p>
+    <p>All information associated to these stations will be permanently deleted.
+      <span class="text-danger">This operation can not be undone.</span>
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss('cancelClick')">Cancel</button>
+    <button type="button" ngbAutofocus class="btn btn-danger" (click)="modal.close('okClick')">Ok</button>
+  </div>
+</ng-template>

@@ -12,17 +12,21 @@ export class User {
   region: string;
   division: string;
   discord: {id: string, username: string, discriminator: string, avatar: string, allowed: boolean | null};
-  perms: Perm[];
+  perms: {perm: Perm, level: number}[];
 }
 
-class Group {
-  id: number;
+export class Group {
+  _id: string;
   name: string;
   colour: string;
+  staff: boolean;
+  inherit: string[];
+  perms: {perm: Perm, level: number}[];
 }
 
-class Perm {
-  id: number;
+export class Perm {
+  sku: string;
   name: string;
   description: string;
+  level?: number;
 }

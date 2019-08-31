@@ -1,0 +1,93 @@
+<div class="container mt-4">
+  <form [formGroup]="client" (submit)="updateClient()">
+    <div class="card">
+      <div class="card-header">
+        Client Details
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label>Client Name</label>
+          <input type="text" class="form-control" placeholder="Euroscope Auto Updater" formControlName="name">
+        </div>
+        <div class="form-group">
+          <label>Client SKU</label>
+          <input type="text" class="form-control" placeholder="es-auto-updater" formControlName="sku">
+        </div>
+        <div class="form-group">
+          <label>Client Description</label>
+          <textarea class="form-control" placeholder="Auto updates EuroScope client packages" formControlName="description"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card my-4">
+      <div class="card-header">
+        Client Versions
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped text-center" formArrayName="versions">
+            <thead>
+            <tr>
+              <th scope="col">Version</th>
+              <th scope="col">Date</th>
+              <th scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let version of versions.controls; let i = index" [formGroupName]="i">
+              <th scope="row"><input class="text-input text-center" type="text" formControlName="number"></th>
+              <td><input class="text-input text-center" type="text" formControlName="created"></td>
+              <td>
+                <a class="btn btn-outline-secondary mx-2" target="_blank" [href]="version.download"><fa-icon icon="download"></fa-icon></a>
+                <button class="btn btn-outline-danger mx-2" (click)="deleteVersion(version.number, deleteVersionModal)"><fa-icon icon="trash"></fa-icon></button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="row my-2">
+          <button class="btn btn-primary mx-auto" type="button" (click)="openUpload()">Upload Version</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row justify-content-center m-4">
+      <button class="btn btn-outline-primary btn-lg d-block col-lg-4 col-md-6 col-sm-10" type="submit" [disabled]="loading$ || !canSubmit$ || deleteLoading$ || !client.valid">
+        <span *ngIf="!loading$">{{submitTxt}}</span>
+        <span *ngIf="loading$" class="spinner-border spinner-border-sm" role="status" aria-hidden="true">
+              <span class="sr-only">Loading...</span>
+            </span>
+      </button>
+    </div>
+  </form>
+
+  <div class="row justify-content-center m-4">
+    <button *ngIf="sku" class="btn btn-outline-danger btn-lg d-block col-lg-4 col-md-6 col-sm-10" (click)="deleteClient()" [disabled]="deleteLoading$ || loading$">
+      <span *ngIf="!deleteLoading$">Delete Client</span>
+      <span *ngIf="deleteLoading$" class="spinner-border spinner-border-sm" role="status" aria-hidden="true">
+        <span class="sr-only">Loading...</span>
+      </span>
+    </button>
+  </div>
+</div>
+
+<ng-template #deleteVersionModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-title">Confirm delete version?</h4>
+    <button type="button" class="close" aria-label="Close button" aria-describedby="modal-title" (click)="modal.dismiss('crossClick')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to delete version <span class="text-primary">{{versionToDelete}}</span>?</strong></p>
+    <p>All information associated to this version will be permanently deleted, the files will be stored on the server for up to a month.
+      <span class="text-danger">This operation can not be undone.</span>
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss('cancelClick')">Cancel</button>
+    <button type="button" ngbAutofocus class="btn btn-danger" (click)="modal.close('okClick')">Ok</button>
+  </div>
+</ng-template>

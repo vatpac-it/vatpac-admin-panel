@@ -14,7 +14,7 @@ export class LoginComponent implements OnInit {
   constructor(public userService: UserService, private router: Router) { }
 
   ngOnInit() {
-    this.userService.isAdminObserve(res => {
+    this.userService.isStaffObserve(res => {
       if (res) {
         this.router.navigate(['/']);
       }

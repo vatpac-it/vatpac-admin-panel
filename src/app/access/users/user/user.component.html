@@ -1,0 +1,92 @@
+<div class="container mt-4">
+  <form [formGroup]="user" (submit)="updateUser()">
+    <div class="card">
+      <div class="card-header">
+        {{user.controls['name'].value}}'s Profile
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label>CID</label>
+          <input type="text" class="form-control" placeholder="123456" formControlName="cid">
+        </div>
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" class="form-control" placeholder="John Smith" formControlName="name">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="text" class="form-control" placeholder="johnsmith@gmail.com" formControlName="email">
+        </div>
+        <div class="row">
+          <div class="form-group col-12 col-md-4">
+            <label>Country</label>
+            <input type="text" class="form-control" placeholder="AU" formControlName="country">
+          </div>
+          <div class="form-group col-12 col-md-4">
+            <label>Region</label>
+            <input type="text" class="form-control" placeholder="OCEN" formControlName="region">
+          </div>
+          <div class="form-group col-12 col-md-4">
+            <label>Division</label>
+            <input type="text" class="form-control" placeholder="PAC" formControlName="division">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>ATC Rating</label>
+          <input type="text" class="form-control" placeholder="S2" formControlName="atc_rating">
+        </div>
+        <div class="form-group">
+          <label>Pilot Rating</label>
+          <input type="text" class="form-control" placeholder="None" formControlName="pilot_rating">
+        </div>
+        <div class="form-group">
+          <label>Primary Group</label>
+          <div ngbDropdown class="col-12 col-md-4 my-2">
+            <button class="btn btn-outline-primary w-100" ngbDropdownToggle type="button">{{primary ? primary.name : 'Member'}}</button>
+            <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+              <button ngbDropdownItem type="button" *ngFor="let group of groups" (click)="primary = group">{{group.name}}</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Secondary Groups</label>
+          <div class="d-flex justify-content-around align-items-center flex-wrap my-2">
+            <ul class="list-group px-0 col-12 col-md-8">
+              <li class="list-group-item text-muted text-center font-italic" *ngIf="secondary.length === 0">None</li>
+              <li class="list-group-item font-weight-bold d-flex justify-content-between align-items-center" *ngFor="let g of secondary" [style.color]="'#' + g.colour || '000'">
+                <span>{{g.name}}</span>
+                <button class="btn btn-link text-danger" type="button" (click)="removeGroup(g)">
+                  <fa-icon [icon]="'times'"></fa-icon>
+                </button></li>
+            </ul>
+            <div ngbDropdown class="col-12 col-md-3 my-2">
+              <button class="btn btn-outline-primary w-100" ngbDropdownToggle type="button" [disabled]="groups.length === 0">Add Group</button>
+              <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                <button ngbDropdownItem type="button" *ngFor="let group of groups" (click)="addGroup(group)">{{group.name}}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+    <div class="row justify-content-center m-4">
+      <button class="btn btn-outline-primary btn-lg d-block col-lg-4 col-md-6 col-sm-10" type="submit" [disabled]="loading$ || !canSubmit$ || !user.valid">
+        <span *ngIf="!loading$">{{submitTxt}}</span>
+        <span *ngIf="loading$" class="spinner-border spinner-border-sm" role="status" aria-hidden="true">
+              <span class="sr-only">Loading...</span>
+            </span>
+      </button>
+    </div>
+  </form>
+
+<!--  <div class="row justify-content-center m-4">-->
+<!--    <button *ngIf="id" class="btn btn-outline-danger btn-lg d-block col-lg-4 col-md-6 col-sm-10" (click)="deleteGroup()" [disabled]="deleteLoading$ || loading$">-->
+<!--      <span *ngIf="!deleteLoading$">Delete Group</span>-->
+<!--      <span *ngIf="deleteLoading$" class="spinner-border spinner-border-sm" role="status" aria-hidden="true">-->
+<!--        <span class="sr-only">Loading...</span>-->
+<!--      </span>-->
+<!--    </button>-->
+<!--  </div>-->
+</div>

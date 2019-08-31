@@ -8,11 +8,11 @@
       </div>
     </a>
 
-    <a class="card w-25 text-decoration-none text-body" routerLink="/users" *ngIf="userService.hasUserAccess()">
+    <a class="card w-25 text-decoration-none text-body" routerLink="/access" *ngIf="userService.hasUserAccess()">
       <img class="card-img-top" src="https://via.placeholder.com/400x160" alt="Department Image">
       <div class="card-body">
-        <h5 class="card-title">Users</h5>
-        <p class="card-text">View and manager users</p>
+        <h5 class="card-title">Access</h5>
+        <p class="card-text">View and manager users, groups and perms</p>
       </div>
     </a>
   </div>

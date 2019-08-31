@@ -13,7 +13,6 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
       })),
       state('closed',   style({
         opacity: '0',
-        // display: 'none',
       })),
       transition('closed => open', animate('400ms ease-in')),
       transition('open => closed', animate('100ms ease-out'))
@@ -35,14 +34,13 @@ export class NavComponent implements OnInit {
 
   @HostListener('window:resize', ['$event.target'])
   onResize(event) {
-    if(event.innerWidth > 990){
-      //need to set this to 'open' for large screens to show up because of opacity in 'closed' animation.
+    if(event.innerWidth > 767){
       this._isNavbarCollapsedAnim = 'open';
       this.navToggled = false;
-    }
+    }1
   }
 
-  toggleNavbar(): void {
+  toggleNavbar() {
     if(this.navToggled){
       this._isNavbarCollapsedAnim = 'closed';
       this.navToggled = false;
@@ -51,9 +49,7 @@ export class NavComponent implements OnInit {
       this.navToggled = true;
     }
   }
-  get isNavbarCollapsedAnim() : string {
-    return this._isNavbarCollapsedAnim;
-  }
+  get isNavbarCollapsedAnim() : string { return this._isNavbarCollapsedAnim; }
 
   loggedIn() {
     return this.userService.loggedIn();

@@ -1,6 +1,6 @@
 import {Component, OnInit, QueryList, ViewChildren} from '@angular/core';
 import {Observable} from "rxjs";
-import {SortableHeaderDirective, SortEvent} from "../services/sortable-header.directive";
+import {SortableHeaderDirective, SortEvent} from "../sortable-header/sortable-header.directive";
 import {EventsService} from "../services/events.service";
 import {Event} from "../models/Event";
 import {DecimalPipe} from "@angular/common";

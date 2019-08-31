@@ -6,7 +6,7 @@ import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
 import {HTTP_INTERCEPTORS, HttpClientModule, HttpClientXsrfModule} from "@angular/common/http";
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import {faCalendarAlt, faTimes} from '@fortawesome/free-solid-svg-icons';
+import {faCalendarAlt, faDownload, faTimes, faTrash} from '@fortawesome/free-solid-svg-icons';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -14,11 +14,9 @@ import { NavComponent } from './nav/nav.component';
 import { FooterComponent } from './footer/footer.component';
 import { HomeComponent } from './home/home.component';
 import { SlotsComponent } from './slots/slots.component';
-import { UsersComponent } from './users/users.component';
 import { EventsComponent } from './events/events.component';
 import { EventComponent } from './events/event/event.component';
 import { FileUploadComponent } from './components/file-upload/file-upload.component';
-import { SortableHeaderDirective } from './services/sortable-header.directive';
 import {DecimalPipe} from "@angular/common";
 import { LoginComponent } from './login/login.component';
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
@@ -27,8 +25,12 @@ import {CanDeactivateGuard} from "./guards/can-deactivate-guard";
 import { AlertComponent } from './components/alert/alert.component';
 import {AlertService} from "./services/alert.service";
 import { ClientsComponent } from './clients/clients.component';
+import { ClientComponent } from './clients/client/client.component';
+import { AccessComponent } from './access/access.component';
+import {SortableHeaderModule} from "./sortable-header/sortable-header.module";
+import { DataComponent } from './data/data.component';
 
-library.add(faCalendarAlt, faTimes);
+library.add(faCalendarAlt, faTimes, faDownload, faTrash);
 
 @NgModule({
   declarations: [
@@ -37,20 +39,22 @@ library.add(faCalendarAlt, faTimes);
     FooterComponent,
     HomeComponent,
     SlotsComponent,
-    UsersComponent,
     EventsComponent,
     EventComponent,
     FileUploadComponent,
-    SortableHeaderDirective,
     LoginComponent,
     AlertComponent,
-    ClientsComponent
+    ClientsComponent,
+    ClientComponent,
+    AccessComponent,
+    DataComponent
   ],
   entryComponents: [FileUploadComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
     FormsModule,
+    SortableHeaderModule,
     ReactiveFormsModule,
     HttpClientModule,
     HttpClientXsrfModule.withOptions({

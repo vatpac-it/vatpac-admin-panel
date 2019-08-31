@@ -18,7 +18,7 @@ export class CanDeactivateGuard implements CanDeactivate<CanComponentDeactivate>
                 currentState: RouterStateSnapshot,
                 nextState: RouterStateSnapshot) {
 
-    this.eventsService.setEvent(new Event());
+    // this.eventsService.setEvent(new Event());
 
     return true;
   }

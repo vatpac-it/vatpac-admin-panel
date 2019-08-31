@@ -1,11 +1,12 @@
 import {Injectable, PipeTransform} from '@angular/core';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
-import {User} from '../models/User';
-import {SortDirection} from "./sortable-header.directive";
+import {Group, User} from '../models/User';
+import {SortDirection} from "../sortable-header/sortable-header.directive";
 import {debounceTime, delay, map, switchMap, tap} from "rxjs/operators";
 import {DecimalPipe} from "@angular/common";
 import {CoreResponse} from "../models/CoreResponse";
+import {error} from "selenium-webdriver";
 
 const url = 'https://core.vatpac.org';
 
@@ -73,14 +74,25 @@ export class UserService {
 
     this.http.get<CoreResponse>(url + '/sso/user')
       .subscribe((res) => {
-        if (!res || res.request.result === 'failed') {
-          this.logoutData(null);
+        res = new CoreResponse(res);
+        if (!res.success() || !res.body || !res.body.user) {
+          if (localStorage.getItem('current_user') !== null) {
+            this.logout();
+          }
           return;
         }
 
-        if (res.request.result === 'success' && res.body.user) {
-          localStorage.setItem('current_user', JSON.stringify(res.body.user));
-          this.currentUserSubject.next(res.body.user);
+        let u = res.body.user;
+
+        this.getPerms().subscribe(p => {
+          u.perms = p;
+
+          localStorage.setItem('current_user', JSON.stringify(u));
+          this.currentUserSubject.next(u);
+        });
+      }, error1 => {
+        if (localStorage.getItem('current_user') !== null) {
+          this.logout();
         }
       });
 
@@ -103,7 +115,28 @@ export class UserService {
   }
 
   public getUsers(): Observable<CoreResponse> {
-    return this.http.get<CoreResponse>(url + '/users');
+    return this.http.get<CoreResponse>(url + '/access/users');
+  }
+
+  public getUser(id: string): Observable<CoreResponse> {
+    return this.http.get<CoreResponse>(url + '/access/users/' + id);
+  }
+
+  public updateUser(id: string, primary: Group, secondary: Group[]): Observable<CoreResponse> {
+    return this.http.patch<CoreResponse>(url + '/access/users/' + id, {primary: primary, secondary: secondary});
+  }
+
+  public getPerms() {
+    return this.http.get<CoreResponse>(url + '/sso/user/perms')
+      .pipe(map((res) => {
+        res = new CoreResponse(res);
+        if (!res.success()) {
+          this.logout();
+          return;
+        }
+
+        return res.body.perms;
+      }));
   }
 
   public login() {
@@ -136,24 +169,33 @@ export class UserService {
    ***************************************/
 
   public isStaff() {
-    return this.currentUserValue !== null && (this.currentUserValue.groups.primary.id > 10 || this.currentUserValue.groups.secondary.filter(group => group.id > 10).length > 0);
+    return this.currentUserValue !== null &&
+      ((this.currentUserValue.groups.primary && this.currentUserValue.groups.primary.staff) ||
+        this.currentUserValue.groups.secondary.filter(group => group && group.staff === true ).length > 0);
   }
 
   public hasUserAccess() {
-    return this.currentUserValue !== null && this.currentUserValue.perms.map(perm => perm.id).indexOf(8734) !== -1;
+    return this.currentUserValue !== null && this.currentUserValue.perms.filter(perm => perm.level === 3 && perm.perm.sku === 'USER_ACCESS').length > 0;
+  }
+
+  public hasDataAccess() {
+    return this.currentUserValue !== null && this.currentUserValue.perms.filter(perm => perm.level === 3 && perm.perm.sku === 'DATA_ACCESS').length > 0;
   }
 
   public hasEventAccess() {
-    return this.currentUserValue !== null && this.currentUserValue.perms.map(perm => perm.id).indexOf(7483) !== -1;
+    return this.currentUserValue !== null && this.currentUserValue.perms.filter(perm => perm.level === 3 && perm.perm.sku === 'EDIT_EVENTS').length > 0;
   }
 
 
 
 
 
-  public isAdminObserve(cb) {
+  public isStaffObserve(cb) {
     this.currentUser.subscribe(user => {
-      cb(user !== null && user.groups.primary.id > 10);
+      let isAdmin = this.currentUserValue !== null &&
+        ((this.currentUserValue.groups.primary && this.currentUserValue.groups.primary.staff) ||
+          this.currentUserValue.groups.secondary.filter(group => group && group.staff === true ).length > 0);
+      cb(isAdmin);
     });
   }
 
@@ -189,7 +231,7 @@ export class UserService {
       if (Array.isArray(us)) {
         us = us.filter(user => {
           user.name = user.first_name && user.last_name ? user.first_name + ' ' + user.last_name : user.first_name;
-          user.group_name = user.groups.primary.name;
+          user.group_name = user.groups.primary ? user.groups.primary.name : (user.groups.secondary.length > 0 ? user.groups.secondary[0].name : 'None');
           user.pilot_rating = Array.isArray(user.pilot_rating) ? user.pilot_rating.join(', ') : (parseInt(user.pilot_rating.toString()) === 0 ? 'None' : user.pilot_rating.toString());
 
           return user;
@@ -210,5 +252,9 @@ export class UserService {
         return {users: [], total: 0};
       }
     }));
+  }
+
+  public refresh() {
+    this._search$.next();
   }
 }

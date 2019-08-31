@@ -1,8 +1,10 @@
-<div class="container mt-4" *ngIf="model">
+<div class="container mt-4" [formGroup]="event">
   <div class="card">
     <div class="card-header">Applications</div>
     <div class="card-body">
-      <table class="table table-hover table-striped text-center" *ngIf="model.applications">
+      <p><strong>NOTE: </strong> When assigning a controller position, the position is set upon clicking the option the the dropdown, you <strong>do not</strong> need to click save at the bottom of the page.</p>
+
+      <table class="table table-hover table-striped text-center" *ngIf="applications.length > 0">
         <thead>
         <tr>
           <th scope="col">Controller</th>
@@ -12,40 +14,40 @@
           <th scope="col">Assign</th>
         </tr>
         </thead>
-        <tbody>
-          <ng-container *ngFor="let cid of objectKeys(model.applications)">
-            <ng-container *ngFor="let date of objectKeys(model.applications[cid].dates)">
-              <tr class="bg-darklight">
-                <th scope="row">{{model.applications[cid].user.name + ' (' + model.applications[cid].user.rating + ') - ' + cid}}</th>
-                <td>{{formatDate(date)}}</td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr *ngFor="let time of objectKeys(model.applications[cid].dates[date])">
-                <th scope="row"></th>
-                <td></td>
-                <td>{{time.substr(0, 5)}}</td>
-                <td>{{model.applications[cid].dates[date][time].positions.join(', ')}}</td>
+        <tbody formArrayName="applications">
+          <tr *ngFor="let application of applications.controls; let i = index">
+            <ng-container *ngIf="getApplicationGroup(i); let group">
+              <ng-container *ngIf="getUserGroup(group); let user">
+                <th scope="row">{{user.controls.cid.value + ((user.controls.first_name.value && user.controls.last_name.value) ?
+                    (' - ' + user.controls.first_name.value + ' ' + user.controls.last_name.value)
+                    : '')}}</th>
+                <td>{{formatDate(group.controls.date.value)}}</td>
+                <td>{{formatTime(group.controls.date.value)}}</td>
+                <td>{{group.controls.position.value}}</td>
                 <td>
-                  <div *ngIf="objectKeys(model.positions).length > 0" ngbDropdown>
-                    <button class="btn btn-outline-primary" ngbDropdownToggle>{{model.applications[cid].dates[date][time].assigned || 'None'}}</button>
+                  <div ngbDropdown>
+                    <button class="btn btn-outline-primary" [class.btn-outline-success]="isSuccess(user.controls._id.value, group.controls.date.value)" ngbDropdownToggle [disabled]="isLoading(user.controls._id.value, group.controls.date.value)">
+                      <span *ngIf="!isLoading(user.controls._id.value, group.controls.date.value); else loaderBtn">{{selected(group.controls.date.value, user.controls._id.value) || 'None'}}</span>
+                      <ng-template #loaderBtn>
+                            <span  class="spinner-border spinner-border-sm" role="status" aria-hidden="true">
+                              <span class="sr-only">Loading...</span>
+                            </span>
+                      </ng-template>
+                    </button>
                     <div ngbDropdownMenu aria-labelledby="publishStatusDdwn">
-                      <button ngbDropdownItem (click)="assignPosition(cid, model.applications[cid].user, date, time, null, 'None', 0)">{{'None'}}</button>
-                      <ng-container *ngFor="let icao of objectKeys(model.positions)">
-                        <button ngbDropdownItem disabled>{{icao}}</button>
-                        <ng-container *ngFor="let position of objectKeys(model.positions[icao])">
-                          <button ngbDropdownItem class="ml-2" (click)="assignPosition(cid, model.applications[cid].user, date, time, icao, position, model.applications[cid].dates[date][time].data_hidden)">{{position}}</button>
-                        </ng-container>
+                      <button ngbDropdownItem (click)="assignPosition(user.controls._id.value, group.controls.date.value, null, null)">{{'None'}}</button>
+                      <ng-container *ngFor="let position of available.controls">
+                        <button ngbDropdownItem (click)="assignPosition(user.controls._id.value, group.controls.date.value, position.value, group.controls.private.value)">{{position.value}}</button>
                       </ng-container>
                     </div>
                   </div>
                 </td>
-              </tr>
+              </ng-container>
             </ng-container>
-          </ng-container>
+          </tr>
         </tbody>
       </table>
+      <p *ngIf="applications.length === 0" class="text-center font-italic text-muted">There are no applications yet!</p>
     </div>
   </div>
 </div>
