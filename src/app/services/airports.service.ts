@@ -166,6 +166,8 @@ export class AirportsService {
           progress.error('Failed');
         }
       }
+    }, error => {
+      progress.error('Failed');
     });
 
     return progress.asObservable();

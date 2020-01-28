@@ -1,0 +1,10 @@
+<div class="timeline--wrapper">
+  <ul class="timeline">
+    <li *ngFor="let slot of time.times" [class]="!slot.available ? colorClass : ''" [class.complete]="!slot.available" [style.width]="getWidth(slot)">
+      <div class="title">
+        <span>{{getName(slot)}}</span>
+      </div>
+      <div class="status"></div>
+    </li>
+  </ul>
+</div>

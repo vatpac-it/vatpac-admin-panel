@@ -28,7 +28,7 @@
     </tr>
     </thead>
     <tbody>
-    <tr class="selectable" *ngFor="let client of clients$ | async" (click)="router.navigate(['/clients', client.sku])">
+    <tr class="selectable" *ngFor="let client of clients$ | async" (click)="router.navigate(['/operations/clients', client.sku])">
       <td><ngb-highlight [result]="client.sku" [term]="clientService.searchTerm"></ngb-highlight></td>
       <td><ngb-highlight [result]="client.name" [term]="clientService.searchTerm"></ngb-highlight></td>
       <td><ngb-highlight [result]="client.description" [term]="clientService.searchTerm"></ngb-highlight></td>

@@ -1,5 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 
+@import "~ng-pick-datetime/assets/style/picker.min.css";
+
 html {
   overflow: hidden;
 }
@@ -19,6 +21,14 @@ html, body {
   border-left: 5px solid #a94442; /* red */
 }
 
+.modal-xl {
+  max-width: 92%;
+}
+
+.lh-1 {
+  line-height: 1;
+}
+
 .selectable {
   cursor: pointer;
 }
@@ -29,6 +39,17 @@ html, body {
 
 button:focus {
   outline: none;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  /* display: none; <- Crashes Chrome on hover */
+  -webkit-appearance: none;
+  margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+input[type=number] {
+  -moz-appearance:textfield; /* Firefox */
 }
 
 // BOOTSTRAP ADDONS //
@@ -167,3 +188,6 @@ button:focus {
   background: none;
 }
 
+.hover-header .card-header {
+  padding: 0;
+}

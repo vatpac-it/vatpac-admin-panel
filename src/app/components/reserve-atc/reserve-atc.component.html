@@ -1,0 +1,38 @@
+<div *ngIf="!disabled else disabledATC">
+  <div class="row justify-content-center my-3 px-3">
+    <div class="btn-group" role="group" aria-label="Reservation Dates">
+      <button *ngFor="let date of dates" type="button" [class]="'btn ' + (date.isSameDateAs(currentDate) ? 'btn-primary' : 'btn-outline-primary')" (click)="setTimesForDay(date)">{{formatDate(date)}}</button>
+    </div>
+  </div>
+
+  <div>
+    <app-airport-line *ngFor="let airport of airports" [airport]="airport" (airportFilter)="filterTimes($event)"
+                      [currentFilter]="currentFilter" [positions]="hasPositions(airport)"></app-airport-line>
+
+    <div class="atc-timeline--container">
+      <div class="timeline-labels">
+        <span *ngFor="let time of filteredTimes"
+              class="position-title">{{time.airport.slice(2, 4) + (time.modifier ? '-' + time.modifier : '') + '_' + time.position}}</span>
+        <span class="position-title base-title">(Browser Local)</span>
+      </div>
+
+      <div class="timelines--container">
+        <app-atc-timeline *ngFor="let time of filteredTimes" [time]="time"
+                          [shifts]="shifts"></app-atc-timeline>
+
+        <ul class="timeline">
+          <li *ngFor="let time of timelineTimes">
+            <div class="status"></div>
+            <span>{{formatTime(time)}}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="btn btn-outline-danger px-3 my-3 mx-auto d-block" (click)="activeModal.close()">Close</button>
+
+<ng-template #disabledATC>
+  <h5 class="text-warning text-center">Please either rotate your device to landscape or use a larger screen to view ATC.</h5>
+</ng-template>

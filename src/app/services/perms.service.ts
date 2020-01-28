@@ -38,6 +38,7 @@ function sort(perms: Perm[], column: string, direction: string): Perm[] {
 }
 
 function matches(perm: Perm, term: string, pipe: PipeTransform) {
+  term = term.toLowerCase();
   return perm.sku.toLowerCase().includes(term)
     || perm.name.toLowerCase().includes(term)
     || perm.description.toLowerCase().includes(term);
@@ -55,7 +56,7 @@ export class PermsService {
 
   private _state: State = {
     page: 1,
-    pageSize: 5,
+    pageSize: 10,
     searchTerm: '',
     sortColumn: '',
     sortDirection: ''

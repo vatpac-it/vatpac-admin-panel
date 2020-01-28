@@ -1,0 +1,55 @@
+<div class="container mt-4">
+  <br/>
+
+  <div class="form-group form-inline justify-content-between px-3">
+    <div class="my-3 col-12 col-md-5">
+      <div class="input-group">
+        <input class="form-control ml-2" type="text" name="searchTerm" placeholder="Search NOTAMs" [(ngModel)]="notamsService.searchTerm"/>
+        <div class="input-group-append" *ngIf="notamsService.loading$ | async">
+          <div class="input-group-text">
+            <div class="spinner-border spinner-border-sm" role="status">
+              <span class="sr-only">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row justify-content-center justify-content-md-end my-3 col-12 col-md-7">
+      <button class="btn btn-primary mx-2" [routerLink]="['./create']">Create NOTAM</button>
+    </div>
+  </div>
+
+  <table class="table table-striped table-hover">
+    <thead>
+    <tr>
+      <th scope="col" sortable="title" class="selectable" (sort)="onSort($event)">Title</th>
+      <th scope="col" sortable="start" class="selectable" (sort)="onSort($event)">Start</th>
+      <th scope="col" sortable="end" class="selectable" (sort)="onSort($event)">End</th>
+      <th scope="col" sortable="type" class="selectable" (sort)="onSort($event)">Type</th>
+      <th scope="col" sortable="author" class="selectable" (sort)="onSort($event)">Author</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr class="selectable" *ngFor="let notam of notams$ | async" (click)="router.navigate(['/operations/notams', notam._id])">
+      <td><ngb-highlight [result]="notam.title" [term]="notamsService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="notam.start" [term]="notamsService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="notam.end" [term]="notamsService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="notam.type" [term]="notamsService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="notam.author" [term]="notamsService.searchTerm"></ngb-highlight></td>
+    </tr>
+    </tbody>
+  </table>
+  <p *ngIf="(notams$ | async).length === 0" class="text-center">There are no notams.</p>
+
+  <div class="d-flex justify-content-between p-2">
+    <ngb-pagination
+      [collectionSize]="total$ | async" [(page)]="notamsService.page" [pageSize]="notamsService.pageSize">
+    </ngb-pagination>
+
+    <select class="custom-select w-auto" name="pageSize" [(ngModel)]="notamsService.pageSize">
+      <option [ngValue]="5">5 NOTAMs per Page</option>
+      <option [ngValue]="10">10 NOTAMs per Page</option>
+      <option [ngValue]="15">15 NOTAMs per Page</option>
+    </select>
+  </div>
+</div>

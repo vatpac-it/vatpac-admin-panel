@@ -1,0 +1,136 @@
+table {
+  margin: 5px auto;
+  border-spacing: 10px;
+  border-collapse: separate;
+}
+table.divided {
+  padding: 0 30px;
+  margin-bottom: 10px;
+  border-bottom: #d2d2d2 1px solid;
+}
+tr {
+  height: 30px;
+}
+
+td {
+  font-weight: lighter;
+  border-radius: 7px;
+  padding: 3px 10px;
+  margin: 0 10px;
+  background: none;
+  cursor: pointer;
+}
+
+td:hover {
+  background: #000;
+  color: #fff;
+}
+
+td.selected {
+  box-shadow: 0 0 0 1px #000;
+}
+
+.airport-title {
+  width: 70px;
+  font-weight: 600;
+  text-align: center;
+  border-radius: 7px;
+  padding: 3px 10px;
+  background: none;
+  cursor: pointer;
+}
+
+.airport-title:hover {
+  background: #000;
+  color: #fff;
+}
+
+.airport-title.selected {
+  box-shadow: 0 0 0 2px #000;
+}
+
+.text-dblue {
+  color: #002CFF;
+}
+
+.text-dblue:hover {
+  background: #002CFF;
+  color: #fff;
+}
+
+.text-dblue.selected {
+  box-shadow: 0 0 0 1px #002CFF;
+}
+
+.text-lblue {
+  color: #00BFC2;
+}
+
+.text-lblue:hover {
+  background: #00BFC2;
+  color: #fff;
+}
+
+.text-lblue.selected {
+  box-shadow: 0 0 0 1px #00BFC2;
+}
+
+.text-orange {
+  color: #FFAA00;
+}
+
+.text-orange:hover {
+  background: #FFAA00;
+  color: #fff;
+}
+
+.text-orange.selected {
+  box-shadow: 0 0 0 1px #FFAA00;
+}
+
+.text-red {
+  color: #ff533c;
+}
+
+.text-red:hover {
+  background: #ff533c;
+  color: #fff;
+}
+
+.text-red.selected {
+  box-shadow: 0 0 0 1px #ff533c;
+}
+
+.text-pink {
+  color: #e002ff;
+}
+
+.text-pink:hover {
+  background: #e002ff;
+  color: #fff;
+}
+
+.text-pink.selected {
+  box-shadow: 0 0 0 1px #e002ff;
+}
+
+.text-green {
+  color: #00a403;
+}
+
+.text-green:hover {
+  background: #00a403;
+  color: #fff;
+}
+
+/*noinspection CssUnusedSymbol,CssUnusedSymbol,CssUnusedSymbol*/
+.text-green.selected {
+  box-shadow: 0 0 0 1px #00a403;
+}
+
+/*MEDIA QUERY*/
+@media only screen and (max-width : 475px) {
+  td, .airport-title {
+    padding: 3px;
+  }
+}

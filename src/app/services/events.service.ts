@@ -41,6 +41,7 @@ function sort(events: Event[], column: string, direction: string): Event[] {
 }
 
 function matches(event: Event, term: string, pipe: PipeTransform) {
+  term = term.toLowerCase();
   return event.title.toLowerCase().includes(term)
     || event.subtitle.toLowerCase().includes(term)
     || (event.start as string).toLowerCase().includes(term)
@@ -130,6 +131,12 @@ export class EventsService {
       this.alertService.add('danger', 'Error getting event. Please try again later.');
       this.router.navigate(['/events']);
     });
+
+    return this.currentEvent;
+  }
+
+  public newEvent(): Observable<FormGroup> {
+    this.event.next(this.fb.group(new EventForm()));
 
     return this.currentEvent;
   }

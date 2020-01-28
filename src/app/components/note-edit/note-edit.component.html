@@ -1,0 +1,17 @@
+<div class="modal-header">
+  <h4 class="modal-title" id="modal-basic-title">{{editor ? 'Edit' : 'New'}} Note</h4>
+  <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('cross-click')">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body">
+  <div class="container d-flex flex-column justify-content-end">
+    <small class="text-muted text-right p-1">Characters remaining {{maxLength - content.value.length}}</small>
+    <textarea [formControl]="content" rows="10" [maxlength]="maxLength.toString()" class="form-control w-100"></textarea>
+    <small class="text-muted text-right p-1"><i>Created By </i> <strong>{{creator}}</strong></small>
+    <small class="text-muted text-right p-1" *ngIf="editor && editor.user !== ''"><i>Last Edit By </i> <strong>{{editor.user}}</strong> - {{editor.date | date: 'shortDate'}}</small>
+  </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-dark" [disabled]="!content.valid" (click)="activeModal.close({content: content})">Save</button>
+</div>

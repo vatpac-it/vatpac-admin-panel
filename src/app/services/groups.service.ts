@@ -38,6 +38,7 @@ function sort(groups: Group[], column: string, direction: string): Group[] {
 }
 
 function matches(group: Group, term: string, pipe: PipeTransform) {
+  term = term.toLowerCase();
   return group.name.toLowerCase().includes(term)
     || group.colour.toLowerCase().includes(term);
 }

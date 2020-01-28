@@ -1,0 +1,6 @@
+<table [class.divided]="airport === ''">
+  <tr>
+    <td class="airport-title" (click)="setFilter(airport, '')" [class.selected]="currentFilter.airport === airport && currentFilter.position === ''">{{airport !== '' ? airport : 'All'}}</td>
+    <td *ngFor="let position of positions" (click)="setFilter(airport, position)" [class]="'text-' + getColour(position)" [class.selected]="currentFilter.airport === airport && currentFilter.position === position">{{position}}</td>
+  </tr>
+</table>

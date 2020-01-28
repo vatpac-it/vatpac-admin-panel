@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
+import {NavigationEnd, Router} from "@angular/router";
 
 @Component({
   selector: 'app-root',
@@ -6,4 +7,23 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
+
+  crumbs = [];
+
+  constructor(private router: Router) {
+    this.router.events.subscribe(e => {
+      if (e instanceof NavigationEnd) {
+        this.crumbs = window.location.pathname.split('/').filter(r => r !== '');
+      }
+    });
+  }
+
+  getURI(i) {
+    let out = [];
+    for (let x = i; x >= 0; x--) {
+      out.push(this.crumbs[x]);
+    }
+
+    return out.reverse();
+  }
 }

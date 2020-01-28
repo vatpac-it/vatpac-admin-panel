@@ -1,9 +1,9 @@
 import {Component, OnInit, QueryList, ViewChildren} from '@angular/core';
 import {Observable} from "rxjs";
-import {SortableHeaderDirective, SortEvent} from "../sortable-header/sortable-header.directive";
-import {Client} from "../models/Client";
-import {ClientService} from "../services/client.service";
+import {SortableHeaderDirective, SortEvent} from "../../sortable-header/sortable-header.directive";
+import {ClientService} from "../../services/client.service";
 import {NavigationEnd, Router} from "@angular/router";
+import {Client} from "../../models/Client";
 
 @Component({
   selector: 'app-clients',

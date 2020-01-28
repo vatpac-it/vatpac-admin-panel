@@ -4,6 +4,7 @@ import {Observable, Subject} from "rxjs";
 import {DomSanitizer} from "@angular/platform-browser";
 import {map} from "rxjs/operators";
 import {CoreResponse} from "../models/CoreResponse";
+import {AlertService} from "./alert.service";
 
 const url = 'https://core.vatpac.org/';
 
@@ -12,7 +13,7 @@ const url = 'https://core.vatpac.org/';
 })
 export class FilesService {
 
-  constructor(public http: HttpClient, private sanitizer: DomSanitizer) { }
+  constructor(public http: HttpClient, private sanitizer: DomSanitizer, private alertService: AlertService) { }
 
   public getImage(id: number | string) {
     return this.http.get(`${url}/files/${id}`, {
@@ -86,6 +87,10 @@ export class FilesService {
             fileID.error('Failed');
           }
         }
+      }, error => {
+        progress.error('Failed');
+        fileID.error('Failed');
+        this.alertService.add('danger', 'Error uploading the file, please try again later.');
       });
 
       // Save every progress-observable in a map of all observables

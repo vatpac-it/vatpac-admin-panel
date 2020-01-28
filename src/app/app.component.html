@@ -2,6 +2,18 @@
   <app-nav></app-nav>
   <div class="body">
     <app-alert></app-alert>
+
+    <div class="container mt-4">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a routerLink="/"><fa-icon icon="home"></fa-icon> Home</a></li>
+          <li *ngFor="let c of crumbs; let i = index" class="breadcrumb-item" [class.active]="i === (crumbs.length - 1)">
+            <a [routerLink]="getURI(i)" *ngIf="i !== (crumbs.length - 1); else page">{{c | titlecase}}</a>
+            <ng-template #page>{{c | titlecase}}</ng-template></li>
+        </ol>
+      </nav>
+    </div>
+
     <router-outlet></router-outlet>
   </div>
   <app-footer></app-footer>

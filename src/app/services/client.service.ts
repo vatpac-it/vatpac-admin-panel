@@ -40,6 +40,7 @@ function sort(clients: Client[], column: string, direction: string): Client[] {
 }
 
 function matches(client: Client, term: string, pipe: PipeTransform) {
+  term = term.toLowerCase();
   return client.sku.toLowerCase().includes(term)
     || client.name.toLowerCase().includes(term)
     || client.description.toString().toLowerCase().includes(term);

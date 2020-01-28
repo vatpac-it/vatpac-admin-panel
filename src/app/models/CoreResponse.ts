@@ -9,6 +9,6 @@ export class CoreResponse {
   }
 
   success() {
-    return this.request.result === 'success';
+    return this.request && this.request.result === 'success';
   };
 }

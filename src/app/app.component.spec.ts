@@ -20,16 +20,16 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'vatpac-event-admin'`, () => {
+  it(`should have as title 'vatpac-admin-panel'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.debugElement.componentInstance;
-    expect(app.title).toEqual('vatpac-event-admin');
+    expect(app.title).toEqual('vatpac-admin-panel');
   });
 
   it('should render title in a h1 tag', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.debugElement.nativeElement;
-    expect(compiled.querySelector('h1').textContent).toContain('Welcome to vatpac-event-admin!');
+    expect(compiled.querySelector('h1').textContent).toContain('Welcome to vatpac-admin-panel!');
   });
 });

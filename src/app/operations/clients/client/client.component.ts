@@ -1,14 +1,14 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
-import {ClientService} from "../../services/client.service";
+import {ClientService} from "../../../services/client.service";
 import {Observable} from "rxjs";
-import {AlertService} from "../../services/alert.service";
-import {Client} from "../../models/Client";
+import {AlertService} from "../../../services/alert.service";
+import {Client} from "../../../models/Client";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {FileUploadComponent} from "../../components/file-upload/file-upload.component";
-import {FilesService} from "../../services/files.service";
-import {CoreResponse} from "../../models/CoreResponse";
+import {FilesService} from "../../../services/files.service";
+import {CoreResponse} from "../../../models/CoreResponse";
 import {FormArray, FormControl, FormGroup, Validators} from "@angular/forms";
+import {FileUploadComponent} from "../../../components/file-upload/file-upload.component";
 
 @Component({
   selector: 'app-client',
@@ -18,15 +18,15 @@ import {FormArray, FormControl, FormGroup, Validators} from "@angular/forms";
 export class ClientComponent implements OnInit {
 
   sku: string;
-  model: Observable<Client>;
   versionToDelete: string;
 
   client = new FormGroup({
     name: new FormControl('', Validators.required),
     sku: new FormControl('', Validators.required),
-    description: new FormControl('', Validators.required),
-    versions: new FormArray([])
+    description: new FormControl('', Validators.required)
   });
+
+  versions: {number: string, created: string, signature: string, download: string}[] = [];
 
   submitTxt = "Create Client";
   loading$ = false;
@@ -49,19 +49,22 @@ export class ClientComponent implements OnInit {
       res = new CoreResponse(res);
       if (!res.success()) {
         this.alertService.add('danger', 'Error - Could not load client: Unable to load client, please try again.');
-        this.router.navigate(['/clients']);
-        return {};
+        this.router.navigate(['/operations/clients']);
+        return;
       }
 
       this.client.controls['name'].setValue(res.body.client.name);
       this.client.controls['sku'].setValue(res.body.client.sku);
       this.client.controls['description'].setValue(res.body.client.description);
 
+      this.versions = [];
       res.body.client.versions.forEach((version) => {
-        this.versions.push(new FormGroup({
-          number: new FormControl({value: version.number, disabled: true}),
-          created: new FormControl({value: this.formatDate(version.created), disabled: true})
-        }));
+        this.versions.push({
+          number: version.number,
+          created: this.formatDate(version.created),
+          signature: version.file.signature || null,
+          download: version.file ? `https://core.vatpac.org/files/${version.file._id}` : null
+        });
       });
 
       this.submitTxt = "Save Client";
@@ -69,19 +72,18 @@ export class ClientComponent implements OnInit {
       set = true;
 
       return res.body.client;
+    }, error => {
+      this.alertService.add('danger', 'Error - Could not load client: Unable to load client, please try again.');
+      this.router.navigate(['/operations/clients']);
     });
 
     let this$ = this;
     setTimeout(function () {
       if (!set) {
         this$.alertService.add('danger', 'Error getting client');
-        this$.router.navigate(['/clients']);
+        this$.router.navigate(['/operations/clients']);
       }
     }, 3000);
-  }
-
-  get versions() {
-    return this.client.get('versions') as FormArray;
   }
 
   updateClient() {
@@ -104,12 +106,17 @@ export class ClientComponent implements OnInit {
           let this$ = this;
           setTimeout(function () {
             this$.alertService.add('success', 'Successfully updated client');
-            this$.router.navigate(['/clients']);
+
+            this$.clientService.refresh();
+            this$.router.navigate(['/operations/clients']);
           }, 1000);
         } else {
           this.alertService.add('danger', res.request.message);
         }
         this.loading$ = false;
+      }, error => {
+        this.loading$ = false;
+        this.alertService.add('danger', error.error.request.message);
       });
     } else {
       this.clientService.createClient(sku.value, name.value, description.value).subscribe(res => {
@@ -122,12 +129,15 @@ export class ClientComponent implements OnInit {
           let this$ = this;
           setTimeout(function () {
             this$.alertService.add('success', 'Successfully created client');
-            this$.router.navigate(['/clients']);
+            this$.router.navigate(['/operations/clients']);
           }, 1000);
         } else {
           this.alertService.add('danger', res.request.message);
         }
         this.loading$ = false;
+      }, error => {
+        this.loading$ = false;
+        this.alertService.add('danger', error.error.request.message);
       });
     }
   }
@@ -142,9 +152,10 @@ export class ClientComponent implements OnInit {
           if (res.success()) {
             this.getClient();
           } else {
-            console.log('ERROR');
             this.alertService.add('danger', 'Error - Could not delete version: ' + version);
           }
+        }, error => {
+          this.alertService.add('danger', 'Error - Could not delete version: ' + version);
         });
       }
     });
@@ -159,11 +170,14 @@ export class ClientComponent implements OnInit {
         if (res.success()) {
           this.alertService.add('success', 'Deleted Client Successfully.');
 
-          this.router.navigate(['/clients']);
+          this.router.navigate(['/operations/clients']);
         } else {
           this.alertService.add('danger', 'There was an error deleting the client, please try again later.');
         }
         this.deleteLoading$ = false;
+      }, error => {
+        this.deleteLoading$ = false;
+        this.alertService.add('danger', 'There was an error deleting the client, please try again later.');
       });
     }
   }
@@ -171,7 +185,10 @@ export class ClientComponent implements OnInit {
   openUpload() {
     const modalRef = this._modalService.open(FileUploadComponent, {ariaLabelledBy: 'confirm-delete-modal', centered: true});
     modalRef.componentInstance.path = 'client/' + this.sku;
-    modalRef.componentInstance.additionalFields = {version: ''};
+    modalRef.componentInstance.additionalFields.controls = {
+      version: new FormControl('', [Validators.required, Validators.maxLength(30)]),
+      'large.changes': new FormControl('', [Validators.required, Validators.maxLength(512)])
+    };
     modalRef.result.then((result) => {
       if (result.length === 0) {
         this.alertService.add('danger', 'Error - Could not upload version');

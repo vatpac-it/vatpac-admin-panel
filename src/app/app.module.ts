@@ -6,7 +6,14 @@ import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
 import {HTTP_INTERCEPTORS, HttpClientModule, HttpClientXsrfModule} from "@angular/common/http";
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import {faCalendarAlt, faDownload, faTimes, faTrash} from '@fortawesome/free-solid-svg-icons';
+import {
+  faCalendarAlt,
+  faDownload,
+  faHome,
+  faTimes,
+  faTrash
+} from '@fortawesome/free-solid-svg-icons';
+import './helpers/date-prototypes';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -24,13 +31,14 @@ import {httpInterceptor} from "./interceptors/http-interceptor.service";
 import {CanDeactivateGuard} from "./guards/can-deactivate-guard";
 import { AlertComponent } from './components/alert/alert.component';
 import {AlertService} from "./services/alert.service";
-import { ClientsComponent } from './clients/clients.component';
-import { ClientComponent } from './clients/client/client.component';
 import { AccessComponent } from './access/access.component';
 import {SortableHeaderModule} from "./sortable-header/sortable-header.module";
-import { DataComponent } from './data/data.component';
+import { NoteEditComponent } from './components/note-edit/note-edit.component';
+import {ReserveATCComponent} from "./components/reserve-atc/reserve-atc.component";
+import {AtcTimelineComponent} from "./components/reserve-atc/atc-timeline/atc-timeline.component";
+import {AirportLineComponent} from "./components/reserve-atc/airport-line/airport-line.component";
 
-library.add(faCalendarAlt, faTimes, faDownload, faTrash);
+library.add(faCalendarAlt, faTimes, faDownload, faTrash, faHome);
 
 @NgModule({
   declarations: [
@@ -44,12 +52,13 @@ library.add(faCalendarAlt, faTimes, faDownload, faTrash);
     FileUploadComponent,
     LoginComponent,
     AlertComponent,
-    ClientsComponent,
-    ClientComponent,
     AccessComponent,
-    DataComponent
+    NoteEditComponent,
+    ReserveATCComponent,
+    AtcTimelineComponent,
+    AirportLineComponent,
   ],
-  entryComponents: [FileUploadComponent],
+  entryComponents: [FileUploadComponent, NoteEditComponent, ReserveATCComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
