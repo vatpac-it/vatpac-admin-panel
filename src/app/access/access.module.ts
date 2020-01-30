@@ -9,17 +9,18 @@ import {HttpClientModule} from "@angular/common/http";
 import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 
 import {library} from "@fortawesome/fontawesome-svg-core";
-import {faCheck, faSort, faSortDown, faSortUp, faTimes} from "@fortawesome/free-solid-svg-icons";
+import {faCheck, faEdit, faPlus, faSort, faSortDown, faSortUp, faTimes} from "@fortawesome/free-solid-svg-icons";
 
 import { GroupsComponent } from './groups/groups.component';
 import { GroupComponent } from './groups/group/group.component';
 import { PermsComponent } from './perms/perms.component';
 import { PermComponent } from './perms/perm/perm.component';
-import {DragDropModule} from "@angular/cdk/drag-drop";
 import {SortableHeaderModule} from "../sortable-header/sortable-header.module";
 import { UserComponent } from './users/user/user.component';
+import { ApiKeysComponent } from './api-keys/api-keys.component';
+import { ApiKeyComponent } from './api-keys/api-key/api-key.component';
 
-library.add(faCheck, faTimes, faSort, faSortUp, faSortDown);
+library.add(faCheck, faTimes, faSort, faSortUp, faSortDown, faPlus, faEdit);
 
 @NgModule({
   declarations: [
@@ -28,7 +29,9 @@ library.add(faCheck, faTimes, faSort, faSortUp, faSortDown);
     GroupComponent,
     PermsComponent,
     PermComponent,
-    UserComponent
+    UserComponent,
+    ApiKeysComponent,
+    ApiKeyComponent
   ],
   imports: [
     CommonModule,
@@ -38,7 +41,6 @@ library.add(faCheck, faTimes, faSort, faSortUp, faSortDown);
     NgbModule,
     HttpClientModule,
     FontAwesomeModule,
-    DragDropModule,
     AccessRoutingModule
   ],
   providers: [DecimalPipe],

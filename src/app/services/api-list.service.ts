@@ -107,7 +107,7 @@ export class ApiListService {
       // Set name field
       if (Array.isArray(keys)) {
         keys = keys.map(k => {
-          k.allowedDomains = (k.allowedDomains as Array<string>).length.toString();
+          k.allowedIPs = (k.allowedIPs as Array<string>).length.toString();
           k.scopes = (k.scopes as Array<string>).length.toString();
           return k;
         });

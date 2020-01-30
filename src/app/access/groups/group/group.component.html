@@ -45,32 +45,47 @@
     </div>
     <br>
     <div class="card">
-      <div class="card-header">
-        Permissions
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <p class="m-0">Permissions</p>
+        <div>
+          <button class="btn btn-primary mx-1" type="button" (click)="acc.expandAll()">Show All</button>
+          <button class="btn btn-primary mx-1" type="button" (click)="acc.collapseAll()">Hide All</button>
+        </div>
       </div>
-      <div class="card-body">
-        <table class="table table-striped text-center" formArrayName="perms">
-          <thead>
-          <tr>
-            <th scope="col">Perm</th>
-            <th scope="col">Description</th>
-            <th scope="col">Inherit</th>
-            <th scope="col">Block</th>
-            <th scope="col">Deny</th>
-            <th scope="col">Allow</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let perm of perms.controls; let i = index" [formGroupName]="i">
-            <td scope="row"><input class="text-input text-center" type="text" formControlName="sku"></td>
-            <td><input class="text-input text-center" type="text" formControlName="description"></td>
-              <td class="text-center"><input type="radio" aria-label="Radio button for Inherit permissions" formControlName="level" value="0"></td>
-              <td class="text-center"><input type="radio" aria-label="Radio button for Block permissions" formControlName="level" value="1"></td>
-              <td class="text-center"><input type="radio" aria-label="Radio button for Deny permissions" formControlName="level" value="2"></td>
-              <td class="text-center"><input type="radio" aria-label="Radio button for Allow permissions" formControlName="level" value="3"></td>
-          </tr>
-          </tbody>
-        </table>
+      <div class="card-body hover-header" [formGroup]="perms">
+        <ngb-accordion #acc="ngbAccordion" activeIds="ngb-panel-0">
+          <ngb-panel *ngFor="let type of objectKeys(perms.controls)">
+            <ng-template ngbPanelHeader>
+              <button class="panel-header" ngbPanelToggle>
+                <h5 class="m-0">{{type | titlecase}}</h5>
+              </button>
+            </ng-template>
+            <ng-template ngbPanelContent>
+              <table class="table table-striped text-center" [formArrayName]="type">
+                <thead>
+                <tr>
+                  <th scope="col">Perm</th>
+                  <th scope="col">Description</th>
+                  <th scope="col" class="selectable text-info" (click)="markAllAs(type, 0)">Inherit</th>
+                  <th scope="col" class="selectable text-danger" (click)="markAllAs(type, 1)">Block</th>
+                  <th scope="col" class="selectable text-warning" (click)="markAllAs(type, 2)">Deny</th>
+                  <th scope="col" class="selectable text-success" (click)="markAllAs(type, 3)">Allow</th>
+                </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let perm of getPermArray(type).controls; let i = index" [formGroupName]="i">
+                    <td scope="row">{{perm.get('sku').value}}</td>
+                    <td>{{perm.get('description').value}}</td>
+                    <td class="text-center"><input type="radio" aria-label="Radio button for Inherit permissions" formControlName="level" value="0"></td>
+                    <td class="text-center"><input type="radio" aria-label="Radio button for Block permissions" formControlName="level" value="1"></td>
+                    <td class="text-center"><input type="radio" aria-label="Radio button for Deny permissions" formControlName="level" value="2"></td>
+                    <td class="text-center"><input type="radio" aria-label="Radio button for Allow permissions" formControlName="level" value="3"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </ng-template>
+          </ngb-panel>
+        </ngb-accordion>
       </div>
     </div>
 

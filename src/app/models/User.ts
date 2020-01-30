@@ -25,6 +25,7 @@ export class Group {
 }
 
 export class Perm {
+  _id: string;
   sku: string;
   name: string;
   description: string;

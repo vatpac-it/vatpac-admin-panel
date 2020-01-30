@@ -40,7 +40,7 @@
 
   <div class="d-flex justify-content-between p-2">
     <ngb-pagination
-      [collectionSize]="total$ | async" [(page)]="permsService.page" [pageSize]="permsService.pageSize">
+      [collectionSize]="total$ | async" [(page)]="permsService.page" [pageSize]="permsService.pageSize" [maxSize]="5" [rotate]="true" [boundaryLinks]="true">
     </ngb-pagination>
 
     <select class="custom-select w-auto" name="pageSize" [(ngModel)]="permsService.pageSize">

@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import {Airport} from "../models/Airport";
 import {Observable} from "rxjs";
 import {CoreResponse} from "../models/CoreResponse";
 import {HttpClient} from "@angular/common/http";
@@ -13,12 +12,12 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
-  public createAPIKey(name: string, allowedDomains: string[], scopes: string[]): Observable<CoreResponse> {
-    return this.http.post<CoreResponse>(`${url}/api`, {name: name, allowedDomains: allowedDomains, scopes: scopes});
+  public createAPIKey(name: string, allowedIPs: string[], scopes: string[]): Observable<CoreResponse> {
+    return this.http.post<CoreResponse>(`${url}/api`, {name: name, allowedIPs: allowedIPs, scopes: scopes});
   }
 
-  public updateAPIKey(id: string, name: string, allowedDomains: string[], scopes: string[]): Observable<CoreResponse> {
-    return this.http.post<CoreResponse>(`${url}/api/${id}`, {name: name, allowedDomains: allowedDomains, scopes: scopes});
+  public updateAPIKey(id: string, name: string, allowedIPs: string[], scopes: string[]): Observable<CoreResponse> {
+    return this.http.post<CoreResponse>(`${url}/api/${id}`, {name: name, allowedIPs: allowedIPs, scopes: scopes});
   }
 
   public getAPIKeys(): Observable<CoreResponse> {

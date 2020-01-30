@@ -7,6 +7,8 @@ import {GroupComponent} from "./groups/group/group.component";
 import {PermComponent} from "./perms/perm/perm.component";
 import {PermsComponent} from "./perms/perms.component";
 import {UserComponent} from "./users/user/user.component";
+import {ApiKeysComponent} from "./api-keys/api-keys.component";
+import {ApiKeyComponent} from "./api-keys/api-key/api-key.component";
 
 const routes: Routes = [
   { path: '', redirectTo: 'users', pathMatch: 'full' },
@@ -23,6 +25,11 @@ const routes: Routes = [
       { path: '', component: PermsComponent, canActivate: [AuthGuard] },
       { path: 'create', component: PermComponent, canActivate: [AuthGuard] },
       { path: ':sku', component: PermComponent, canActivate: [AuthGuard] }
+    ] },
+  { path: 'api', canActivate: [AuthGuard], children: [
+      { path: '', component: ApiKeysComponent, canActivate: [AuthGuard] },
+      { path: 'create', component: ApiKeyComponent, canActivate: [AuthGuard] },
+      { path: ':id', component: ApiKeyComponent, canActivate: [AuthGuard] }
     ] }
 ];
 

@@ -39,7 +39,7 @@
           <label>Pilot Rating</label>
           <input type="text" class="form-control" placeholder="None" formControlName="pilot_rating">
         </div>
-        <div class="form-group">
+        <div class="form-group" *ngIf="userService.check('users.perms')">
           <label>Primary Group</label>
           <div ngbDropdown class="col-12 col-md-4 my-2">
             <button class="btn btn-outline-primary w-100" ngbDropdownToggle type="button">{{primary ? primary.name : 'Member'}}</button>
@@ -48,7 +48,7 @@
             </div>
           </div>
         </div>
-        <div class="form-group">
+        <div class="form-group" *ngIf="userService.check('users.perms')">
           <label>Secondary Groups</label>
           <div class="d-flex justify-content-around align-items-center flex-wrap my-2">
             <ul class="list-group px-0 col-12 col-md-8">
@@ -67,6 +67,55 @@
             </div>
           </div>
         </div>
+        <div class="form-group" *ngIf="discord.controls.id.value">
+          <label>Discord</label>
+          <div class="card d-flex flex-wrap flex-row justify-content-between align-items-center w-100 py-3 px-2">
+            <div class="col-12 col-md-5 d-flex justify-content-center">
+              <img class="h-75 rounded-circle m-2" src="https://cdn.discordapp.com/avatars/{{discord.controls.id.value}}/{{discord.controls.avatar.value}}.png" alt="">
+              <div class="w-50 p-2">
+                <h3 class="mt-4">{{discord.controls.username.value}}</h3>
+                <span class="text-muted">#{{discord.controls.discriminator.value}}</span>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 p-3" *ngIf="ban.controls.kind.value">
+              <h4 class="text-uppercase text-warning">{{ban.controls.kind.value}} Banned</h4>
+              <p class="text-muted">Until {{expires | date: 'mediumDate'}} {{expires | date: 'shortTime'}} ({{timezone}})</p>
+              <p><strong>Reason:</strong> {{ban.controls.reason.value}}</p>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Staff Notes</label>
+          <div class="container pb-3" formArrayName="staff_notes">
+            <div class="row justify-content-end px-3 pb-3">
+              <button class="btn btn-primary" type="button" *ngIf="userService.check('user.notes.create')" (click)="newNote()">
+                <fa-icon icon="plus"></fa-icon> New Note
+              </button>
+            </div>
+            <div class="card overflow-hidden" *ngFor="let note of staff_notes.controls; let i = index" [formGroupName]="i">
+              <div *ngIf="asFormGroup(note); let group" class="p-3">
+                <div class="d-flex justify-content-between">
+                  <p class="w-auto flex-grow-1">{{group.controls.content.value}}</p>
+                  <div>
+                    <button class="btn btn-info m-2" type="button" *ngIf="userService.check('user.notes.update')" (click)="editNote(i)"><fa-icon icon="edit"></fa-icon> Edit</button>
+                    <button class="btn btn-danger m-2" type="button" *ngIf="userService.check('user.notes.delete')" (click)="deleteNote(confirmDeleteNote, i)"><fa-icon icon="trash"></fa-icon> Delete</button>
+                  </div>
+                </div>
+                <div class="d-flex flex-column">
+                  <small class="text-muted p-1"><i>Created By </i> <strong>{{group.controls.creator.value}}</strong></small>
+                  <small class="text-muted p-1" *ngIf="asFormGroup(asFormGroup(note).controls.editor).controls.user.value; let u"><i>Last Edit By </i> <strong>{{u}}</strong> - {{asFormGroup(asFormGroup(note).controls.editor).controls.date.value | date: 'shortDate'}}</small>
+                </div>
+              </div>
+              <div *ngIf="loadingNotes.indexOf(i) !== -1" [@inOutAnimation] class="loader--wrapper position-absolute w-100 h-100 d-flex justify-content-center align-items-center">
+                <div class="spinner-grow text-info" role="status">
+                  <span class="sr-only">Loading...</span>
+                </div>
+              </div>
+            </div>
+            <p class="text-center text-muted py-3" *ngIf="staff_notes.length === 0">There are no notes for this
+              user.</p>
+          </div>
+        </div>
       </div>
     </div>
     <br>
@@ -80,13 +129,23 @@
       </button>
     </div>
   </form>
-
-<!--  <div class="row justify-content-center m-4">-->
-<!--    <button *ngIf="id" class="btn btn-outline-danger btn-lg d-block col-lg-4 col-md-6 col-sm-10" (click)="deleteGroup()" [disabled]="deleteLoading$ || loading$">-->
-<!--      <span *ngIf="!deleteLoading$">Delete Group</span>-->
-<!--      <span *ngIf="deleteLoading$" class="spinner-border spinner-border-sm" role="status" aria-hidden="true">-->
-<!--        <span class="sr-only">Loading...</span>-->
-<!--      </span>-->
-<!--    </button>-->
-<!--  </div>-->
 </div>
+
+<ng-template #confirmDeleteNote let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-airports-title">Confirm delete this note?</h4>
+    <button type="button" class="close" aria-label="Close button" aria-describedby="modal-title" (click)="modal.dismiss('cross-click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p><strong>Are you sure you want to delete this note?</strong></p>
+    <p>All information associated to this note will be permanently deleted.
+      <span class="text-danger">This operation can not be undone.</span>
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss('cancel-click')">Cancel</button>
+    <button type="button" ngbAutofocus class="btn btn-danger" (click)="modal.close('ok-click')">Ok</button>
+  </div>
+</ng-template>

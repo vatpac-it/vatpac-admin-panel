@@ -1,6 +1,6 @@
 <div class="container-fluid my-5 py-4 px-5">
   <div class="row justify-content-around align-items-center">
-    <a class="card w-25 text-decoration-none text-body" routerLink="/events" *ngIf="userService.hasEventAccess()">
+    <a class="card w-25 text-decoration-none text-body" routerLink="/events" *ngIf="userService.check('events.create')">
       <img class="card-img-top" src="https://via.placeholder.com/400x160" alt="Department Image">
       <div class="card-body">
         <h5 class="card-title">Events</h5>
@@ -8,7 +8,7 @@
       </div>
     </a>
 
-    <a class="card w-25 text-decoration-none text-body" routerLink="/access" *ngIf="userService.hasUserAccess()">
+    <a class="card w-25 text-decoration-none text-body" routerLink="/access" *ngIf="userService.check('users.manage')">
       <img class="card-img-top" src="https://via.placeholder.com/400x160" alt="Department Image">
       <div class="card-body">
         <h5 class="card-title">Access</h5>

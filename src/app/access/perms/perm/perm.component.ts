@@ -51,6 +51,9 @@ export class PermComponent implements OnInit {
             router.navigate(['/access/perms']);
           }
         }, 3000);
+      }, error => {
+        alertService.add('danger', 'Error getting perm');
+        router.navigate(['/access/perms']);
       });
     }
   }
@@ -82,7 +85,7 @@ export class PermComponent implements OnInit {
           this.alertService.add('danger', 'There was an error updating the permission, please try again later.');
         }
         this.loading$ = false;
-      }, (err) => {
+      }, error => {
         this.alertService.add('danger', 'There was an error updating the permission, please try again later.');
       });
     } else {
@@ -101,7 +104,7 @@ export class PermComponent implements OnInit {
           this.alertService.add('danger', 'There was an error creating the permission, please try again later.');
         }
         this.loading$ = false;
-      }, (err) => {
+      }, error => {
         this.alertService.add('danger', 'There was an error creating the permission, please try again later.');
       });
     }
@@ -123,7 +126,7 @@ export class PermComponent implements OnInit {
               this.alertService.add('danger', 'There was an error deleting the permission, please try again later.');
             }
             this.deleteLoading$ = false;
-          }, (err) => {
+          }, error => {
             this.alertService.add('danger', 'There was an error deleting the permission, please try again later.');
             this.deleteLoading$ = false;
           });

@@ -4,8 +4,8 @@
   <div class="form-group form-inline px-3">
     <div class="my-3 col-12 col-md-5">
       <div class="input-group">
-        <input class="form-control ml-2" type="text" name="searchTerm" placeholder="Search Users" [(ngModel)]="usersService.searchTerm"/>
-        <div class="input-group-append" *ngIf="usersService.loading$ | async">
+        <input class="form-control ml-2" type="text" name="searchTerm" placeholder="Search Users" [(ngModel)]="usersSortService.searchTerm"/>
+        <div class="input-group-append" *ngIf="usersSortService.loading$ | async">
           <div class="input-group-text">
             <div class="spinner-border spinner-border-sm" role="status">
               <span class="sr-only">Loading...</span>
@@ -28,11 +28,11 @@
     </thead>
     <tbody>
     <tr class="selectable" *ngFor="let user of users$ | async" (click)="router.navigate(['/access/users', user._id])">
-      <td><ngb-highlight [result]="user.cid" [term]="usersService.searchTerm"></ngb-highlight></td>
-      <td><ngb-highlight [result]="user.name" [term]="usersService.searchTerm"></ngb-highlight></td>
-      <td><ngb-highlight [result]="user.atc_rating" [term]="usersService.searchTerm"></ngb-highlight></td>
-      <td><ngb-highlight [result]="user.pilot_rating" [term]="usersService.searchTerm"></ngb-highlight></td>
-      <td><ngb-highlight [result]="user.groups.primary ? user.groups.primary.name : (user.groups.secondary.length > 0 ? user.groups.secondary[0].name : 'None')" [term]="usersService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="user.cid" [term]="usersSortService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="user.name" [term]="usersSortService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="user.atc_rating" [term]="usersSortService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="user.pilot_rating" [term]="usersSortService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="user.groups.primary ? user.groups.primary.name : (user.groups.secondary.length > 0 ? user.groups.secondary[0].name : 'None')" [term]="usersSortService.searchTerm"></ngb-highlight></td>
     </tr>
     </tbody>
   </table>
@@ -40,10 +40,10 @@
 
   <div class="d-flex justify-content-between p-2">
     <ngb-pagination
-      [collectionSize]="total$ | async" [(page)]="usersService.page" [pageSize]="usersService.pageSize">
+      [collectionSize]="total$ | async" [(page)]="usersSortService.page" [pageSize]="usersSortService.pageSize" [maxSize]="5" [rotate]="true" [boundaryLinks]="true">
     </ngb-pagination>
 
-    <select class="custom-select w-auto" name="pageSize" [(ngModel)]="usersService.pageSize">
+    <select class="custom-select w-auto" name="pageSize" [(ngModel)]="usersSortService.pageSize">
       <option [ngValue]="5">5 Users per Page</option>
       <option [ngValue]="10">10 Users per Page</option>
       <option [ngValue]="15">15 Users per Page</option>
