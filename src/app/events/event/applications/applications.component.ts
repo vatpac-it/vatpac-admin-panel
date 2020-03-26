@@ -6,6 +6,8 @@ import {AlertService} from "../../../services/alert.service";
 import {Form, FormArray, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 import {Subscription} from "rxjs";
 import {CoreResponse} from "../../../models/CoreResponse";
+import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
+import {ReserveATCComponent} from "../../../components/reserve-atc/reserve-atc.component";
 
 @Component({
   selector: 'app-applications',
@@ -19,14 +21,23 @@ export class ApplicationsComponent implements OnInit, OnDestroy {
 
   selectedPositions: {date: Date, user_id: string, position: string}[] = [];
 
+  deselected = [];
+
   loading: {userId: string, date: Date}[] = [];
   success: {userId: string, date: Date}[] = [];
 
-  constructor(private eventsService: EventsService, private activeRoute: ActivatedRoute, private alertService: AlertService, private fb: FormBuilder) { }
+  constructor(private eventsService: EventsService, private activeRoute: ActivatedRoute, private modalService: NgbModal, private alertService: AlertService, private fb: FormBuilder) { }
 
   ngOnInit() {
     this.eventSub = this.eventsService.currentEvent.subscribe(data => {
       this.event = data;
+
+      this.deselected = this.applications.controls.filter(app => app.get('position').value === 'DESELECTED').map(app => {
+        return {
+          date: app.get('date').value,
+          user: (app.get('user') as FormGroup).getRawValue()
+        }
+      });
 
       this.positions.controls.forEach(pos => {
         let p = pos as FormGroup;
@@ -100,6 +111,15 @@ export class ApplicationsComponent implements OnInit, OnDestroy {
   //   }
   // }
 
+  openPreview() {
+    const modalRef = this.modalService.open(ReserveATCComponent, {centered: true, size: 'xl'});
+    modalRef.componentInstance.positions = this.positions.getRawValue();
+    modalRef.componentInstance.available = this.available.getRawValue();
+    modalRef.componentInstance.shifts = this.event.get('shiftLength').value;
+    modalRef.componentInstance.start = this.event.get('start').value;
+    modalRef.componentInstance.end = this.event.get('end').value;
+  }
+
   isLoading(userId, date) {
     return this.loading.some(l => l.userId === userId && l.date === date);
   }
@@ -120,19 +140,36 @@ export class ApplicationsComponent implements OnInit, OnDestroy {
     return (d.getUTCHours() < 10 ? '0' + d.getUTCHours() : d.getUTCHours()) + ':' + (d.getUTCMinutes() < 10 ? '0' + d.getUTCMinutes() : d.getUTCMinutes());
   }
 
-  assignPosition(userId, date, position, hidden) {
+  assignPosition(user: FormGroup, date, position, hidden) {
+    const userId = user.get('_id').value;
     if (userId && date && !this.isLoading(userId, date)) {
       this.loading.push({userId: userId, date: date});
 
       this.eventsService.setPosition(this.event.controls.sku.value, userId, position, date, hidden).subscribe((res) => {
         res = new CoreResponse(res);
         if (!res.success()) {
-          this.alertService.add('danger', 'Error: Could not assign position');
+          this.alertService.add('danger', 'Could not assign position: ' + res.request.message);
         } else {
           if (position === null) {
             this.selectedPositions.splice(this.selectedPositions.findIndex(pos => pos.date.getTime() === date.getTime() && pos.user_id === userId), 1);
+            this.positions.controls.splice(this.positions.controls.findIndex(p => p.get('date').value.getTime() === date.getTime() && p.get('user').get('_id').value === userId), 1);
           } else {
             this.selectedPositions.push({date: date, user_id: userId, position: position});
+            this.positions.controls.push(new FormGroup({
+              user: new FormGroup({
+                _id: new FormControl(res.body.position.user._id, [Validators.required]),
+                cid: new FormControl(res.body.position.user.cid, [Validators.required]),
+                first_name: new FormControl(res.body.position.user.first_name, [Validators.required]),
+                last_name: new FormControl(res.body.position.user.last_name, [Validators.required])
+              }),
+              position: new FormControl(res.body.position.position, [Validators.required]),
+              date: new FormControl(new Date(res.body.position.date), [Validators.required]),
+              hidden: new FormControl(res.body.position.hidden, [Validators.required]),
+              airport: new FormGroup({
+                _id: new FormControl(res.body.position.airport._id, [Validators.required]),
+                icao: new FormControl(res.body.position.airport.icao, [Validators.required])
+              })
+            }))
           }
           this.success.push({userId: userId, date: date});
 
@@ -144,7 +181,14 @@ export class ApplicationsComponent implements OnInit, OnDestroy {
 
         this.loading = this.loading.filter(l => l.userId !== userId && l.date !== date);
       }, error => {
-        this.alertService.add('danger', 'Error: Could not assign position');
+        let errmsg = '';
+        if (error.error.request) {
+          errmsg = ': ' + error.error.request.message;
+        } else if (error.status === 409) {
+          errmsg = ': Position taken';
+        }
+        this.loading = this.loading.filter(l => l.userId !== userId && l.date !== date);
+        this.alertService.add('danger', 'Could not assign position' + errmsg);
       });
 
       // this.eventsService.setEvent(this.model);

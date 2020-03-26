@@ -16,7 +16,7 @@ export class AlertService {
     return this._alerts;
   }
 
-  add(type, message, permanent = false, delay = 5000) {
+  add(type, message, permanent = false, delay = 7000) {
     let $this = this;
     setTimeout(function () {
       const alerts = $this._alerts.value;

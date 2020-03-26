@@ -109,7 +109,7 @@ export class GeneralComponent implements OnInit, OnDestroy {
 
       // this.event.controls.title.setValue(data.title);
       // this.event.controls.subtitle.setValue(data.subtitle);
-      // this.event.controls.sku.setValue(data.sku);
+      // this.event.controls.id.setValue(data.id);
       // this.event.controls.published.setValue(data.published || 0);
       //
       // if (data.start instanceof Date && data.end instanceof Date) {
@@ -223,15 +223,17 @@ export class GeneralComponent implements OnInit, OnDestroy {
   }
 
   openUpload() {
-    const modelRef = this.modalService.open(FileUploadComponent, {ariaLabelledBy: 'upload-image-modal', centered: true});
+    const modelRef = this.modalService.open(FileUploadComponent, {ariaLabelledBy: 'upload-image-modal', centered: true, backdrop: 'static'});
     modelRef.componentInstance.imagesOnly = true;
+    modelRef.componentInstance.maxFiles = 1;
     modelRef.result.then((result) => {
-      if (result.length === 0) return this.alertService.add('danger', 'There was an error uploading the file, please try again');
-      result = result[0];
+      let {ids} = result;
+      if (ids.length === 0) return this.alertService.add('danger', 'There was an error uploading the file, please try again');
+      ids = ids[0];
 
-      this.bgLocation = result;
+      this.bgLocation = 'https://core.vatpac.org/files/' + ids;
       this.showNotice = true;
-      this.event.controls.backgroundImage.setValue(result.substring(result.lastIndexOf('/') + 1));
+      this.event.controls.backgroundImage.setValue(ids);
     });
   }
 

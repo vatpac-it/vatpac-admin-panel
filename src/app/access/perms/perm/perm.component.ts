@@ -26,14 +26,14 @@ export class PermComponent implements OnInit {
   deleteLoading$ = false;
 
   constructor(private route: ActivatedRoute, private router: Router, private alertService: AlertService, private permsService: PermsService, private _modalService: NgbModal) {
-    this.sku = this.route.snapshot.params['sku'];
+    this.sku = this.route.snapshot.params['id'];
     if (this.sku) {
       let valSet = false;
       permsService.getPerm(this.sku).subscribe(res => {
         res = new CoreResponse(res);
         if (res.success()) {
-          this.perm.controls['sku'].setValue(res.body.perm.sku);
-          this.perm.controls['sku'].disable();
+          this.perm.controls['id'].setValue(res.body.perm.sku);
+          this.perm.controls['id'].disable();
           this.perm.controls['name'].setValue(res.body.perm.name);
           this.perm.controls['description'].setValue(res.body.perm.description);
 

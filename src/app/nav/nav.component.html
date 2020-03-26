@@ -13,7 +13,7 @@
           <a class="nav-link" routerLink="/events" routerLinkActive="active">Events</a>
         </li>
         <li ngbDropdown class="nav-item" routerLinkActive="active">
-          <a href class="nav-link" ngbDropdownToggle>Operations</a>
+          <a href (click)="false" class="nav-link" ngbDropdownToggle>Operations</a>
           <div ngbDropdownMenu>
             <button ngbDropdownItem *ngIf="userService.check('clients.update')" routerLink="/operations/clients">Clients</button>
             <button ngbDropdownItem *ngIf="userService.check('notams.update')" routerLink="/operations/notams">NOTAMs</button>

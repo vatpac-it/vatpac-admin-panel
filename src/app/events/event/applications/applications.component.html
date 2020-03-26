@@ -4,6 +4,16 @@
     <div class="card-body">
       <p><strong>NOTE: </strong> When assigning a controller position, the position is set upon clicking the option the the dropdown, you <strong>do not</strong> need to click save at the bottom of the page.</p>
 
+      <div class="row justify-content-end mx-1">
+        <button class="btn btn-info my-3" (click)="openPreview()">Preview Application timeline</button>
+      </div>
+
+      <div *ngFor="let d of deselected" class="alert alert-warning" role="alert">
+        <strong>{{d.user.cid + ((d.user.first_name && d.user.last_name) ?
+          (' - ' + d.user.first_name + ' ' + d.user.last_name)
+          : '')}}</strong> has deselected a position they have been rostered. {{formatDate(d.date)}} at {{formatTime(d.date)}} (UTC)
+      </div>
+
       <table class="table table-hover table-striped text-center" *ngIf="applications.length > 0">
         <thead>
         <tr>
@@ -15,7 +25,7 @@
         </tr>
         </thead>
         <tbody formArrayName="applications">
-          <tr *ngFor="let application of applications.controls; let i = index">
+          <tr *ngFor="let application of applications.controls; let i = index" [class.bg-warning]="application.get('position').value === 'DESELECTED'">
             <ng-container *ngIf="getApplicationGroup(i); let group">
               <ng-container *ngIf="getUserGroup(group); let user">
                 <th scope="row">{{user.controls.cid.value + ((user.controls.first_name.value && user.controls.last_name.value) ?
@@ -35,9 +45,9 @@
                       </ng-template>
                     </button>
                     <div ngbDropdownMenu aria-labelledby="publishStatusDdwn">
-                      <button ngbDropdownItem (click)="assignPosition(user.controls._id.value, group.controls.date.value, null, null)">{{'None'}}</button>
+                      <button ngbDropdownItem (click)="assignPosition(user, group.controls.date.value, null, null)">{{'None'}}</button>
                       <ng-container *ngFor="let position of available.controls">
-                        <button ngbDropdownItem (click)="assignPosition(user.controls._id.value, group.controls.date.value, position.value, group.controls.private.value)">{{position.value}}</button>
+                        <button ngbDropdownItem (click)="assignPosition(user, group.controls.date.value, position.value, group.controls.private.value)">{{position.value}}</button>
                       </ng-container>
                     </div>
                   </div>

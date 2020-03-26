@@ -1,6 +1,5 @@
 export class Client {
-  id: number;
-  sku: string;
+  _id: number;
   name: string;
   description: string;
   versions: {
@@ -8,5 +7,5 @@ export class Client {
     created: string;
     download: string;
     _id: string;
-  }[];
+  }[] | number;
 }

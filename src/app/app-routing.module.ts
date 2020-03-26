@@ -14,7 +14,7 @@ const routes: Routes = [
       { path: '', component: EventsComponent, canActivate: [AuthGuard] },
       { path: 'event', canActivate: [AuthGuard], canDeactivate: [CanDeactivateGuard], children: [
           { path: '', redirectTo: 'create', pathMatch: 'full' },
-          { path: 'edit/:sku', component: EventComponent, canActivate: [AuthGuard], loadChildren: './events/event/event.module#EventModule' },
+          { path: 'edit/:id', component: EventComponent, canActivate: [AuthGuard], loadChildren: './events/event/event.module#EventModule' },
           { path: 'create', component: EventComponent, canActivate: [AuthGuard], loadChildren: './events/event/event.module#EventModule' }
         ] },
       { path: '**', redirectTo: '' }

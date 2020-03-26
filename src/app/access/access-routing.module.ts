@@ -24,7 +24,7 @@ const routes: Routes = [
   { path: 'perms', canActivate: [AuthGuard], children: [
       { path: '', component: PermsComponent, canActivate: [AuthGuard] },
       { path: 'create', component: PermComponent, canActivate: [AuthGuard] },
-      { path: ':sku', component: PermComponent, canActivate: [AuthGuard] }
+      { path: ':id', component: PermComponent, canActivate: [AuthGuard] }
     ] },
   { path: 'api', canActivate: [AuthGuard], children: [
       { path: '', component: ApiKeysComponent, canActivate: [AuthGuard] },

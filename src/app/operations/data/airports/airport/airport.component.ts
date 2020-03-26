@@ -82,7 +82,7 @@ export class AirportComponent implements OnInit {
       for (let section of res.body.airport.stations) {
         this.stations.push(
           new FormGroup({
-            station: new FormControl(section.station, [Validators.required, Validators.maxLength(10)]),
+            station: new FormControl(section.station, [Validators.required, Validators.maxLength(15)]),
             available: new FormControl(section.available, Validators.required)
           })
         );
@@ -102,7 +102,7 @@ export class AirportComponent implements OnInit {
   addStation() {
     this.stations.push(
       new FormGroup({
-        station: new FormControl('', [Validators.required, Validators.maxLength(10)]),
+        station: new FormControl('', [Validators.required, Validators.maxLength(15)]),
         available: new FormControl(true, Validators.required)
       })
     );

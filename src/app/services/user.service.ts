@@ -1,20 +1,22 @@
-import {Injectable, PipeTransform} from '@angular/core';
-import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import {Injectable, isDevMode} from '@angular/core';
+import {BehaviorSubject, Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {Group, User} from '../models/User';
-import {SortDirection} from "../sortable-header/sortable-header.directive";
-import {debounceTime, delay, map, switchMap, tap} from "rxjs/operators";
-import {DecimalPipe} from "@angular/common";
+import {map} from "rxjs/operators";
 import {CoreResponse} from "../models/CoreResponse";
-import {error} from "selenium-webdriver";
 
 const url = 'https://core.vatpac.org';
+
+interface JWT_Token {
+  token: string;
+  expiry: number;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-
+  private jwt_token: BehaviorSubject<JWT_Token>;
   private currentUserSubject: BehaviorSubject<User>;
   public currentUser: Observable<User>;
 
@@ -22,7 +24,23 @@ export class UserService {
     this.currentUserSubject = new BehaviorSubject<User>(JSON.parse(localStorage.getItem('current_user')));
     this.currentUser = this.currentUserSubject.asObservable();
 
+    if (typeof this.jwt_token === 'undefined' || this.jwt_token === null) {
+      this.http.get<CoreResponse>(url + '/sso/refresh_token').subscribe({
+        next: res => {
+          res = new CoreResponse(res);
+          if (!res.success() || !res.body || !res.body.jwt_token || !res.body.jwt_token_expiry) {
+            // window.location.href
+            console.log('Go to Login');
+            return;
+          }
 
+          this.jwt_token.next({token: res.body.jwt_token, expiry: res.body.jwt_token_expiry});
+        },
+        error: err => {
+          console.log('Go to Login');
+        }
+      });
+    }
     this.http.get<CoreResponse>(url + '/sso/user')
       .subscribe((res) => {
         res = new CoreResponse(res);
@@ -90,7 +108,7 @@ export class UserService {
   }
 
   public login() {
-    const callback = 'https://admin.vatpac.org/';
+    const callback = isDevMode() ? 'localhost:4200' : 'https://admin.vatpac.org/';
     window.location.href = url + '/sso?callback=' + encodeURIComponent(callback);
   }
 

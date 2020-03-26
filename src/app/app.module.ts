@@ -37,6 +37,8 @@ import { NoteEditComponent } from './components/note-edit/note-edit.component';
 import {ReserveATCComponent} from "./components/reserve-atc/reserve-atc.component";
 import {AtcTimelineComponent} from "./components/reserve-atc/atc-timeline/atc-timeline.component";
 import {AirportLineComponent} from "./components/reserve-atc/airport-line/airport-line.component";
+import {WebsocketService} from "./services/websocket.service";
+import {FilesService} from "./services/files.service";
 
 library.add(faCalendarAlt, faTimes, faDownload, faTrash, faHome);
 
@@ -75,7 +77,14 @@ library.add(faCalendarAlt, faTimes, faDownload, faTrash, faHome);
     FontAwesomeModule,
     AppRoutingModule
   ],
-  providers: [AlertService, DecimalPipe, { provide: HTTP_INTERCEPTORS, useClass: httpInterceptor, multi: true }, CanDeactivateGuard],
+  providers: [AlertService, WebsocketService, FilesService, DecimalPipe, {
+    provide: HTTP_INTERCEPTORS,
+    useClass: httpInterceptor,
+    multi: true
+  }, CanDeactivateGuard],
+  exports: [
+    ReserveATCComponent
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule {

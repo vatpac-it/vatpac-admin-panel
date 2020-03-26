@@ -1,13 +1,11 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {ClientService} from "../../../services/client.service";
-import {Observable} from "rxjs";
 import {AlertService} from "../../../services/alert.service";
-import {Client} from "../../../models/Client";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {FilesService} from "../../../services/files.service";
 import {CoreResponse} from "../../../models/CoreResponse";
-import {FormArray, FormControl, FormGroup, Validators} from "@angular/forms";
+import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {FileUploadComponent} from "../../../components/file-upload/file-upload.component";
 
 @Component({
@@ -17,27 +15,27 @@ import {FileUploadComponent} from "../../../components/file-upload/file-upload.c
 })
 export class ClientComponent implements OnInit {
 
-  sku: string;
+  id: string;
   versionToDelete: string;
 
   client = new FormGroup({
     name: new FormControl('', Validators.required),
-    sku: new FormControl('', Validators.required),
     description: new FormControl('', Validators.required)
   });
 
-  versions: {number: string, created: string, signature: string, download: string}[] = [];
+  versions: { number: string, created: string, signature: string, download: string }[] = [];
 
   submitTxt = "Create Client";
   loading$ = false;
   canSubmit$ = true;
   deleteLoading$ = false;
 
-  constructor(private clientService: ClientService, private fileService: FilesService, private _modalService: NgbModal, private route: ActivatedRoute, public router: Router, private alertService: AlertService) { }
+  constructor(private clientService: ClientService, private fileService: FilesService, private _modalService: NgbModal, private route: ActivatedRoute, public router: Router, private alertService: AlertService) {
+  }
 
   ngOnInit() {
-    this.sku = this.route.snapshot.params['sku'];
-    if (this.sku) {
+    this.id = this.route.snapshot.params['id'];
+    if (this.id) {
       this.getClient();
     }
 
@@ -45,7 +43,7 @@ export class ClientComponent implements OnInit {
 
   getClient() {
     let set = false;
-    this.clientService.getClient(this.sku).subscribe(res => {
+    this.clientService.getClient(this.id).subscribe(res => {
       res = new CoreResponse(res);
       if (!res.success()) {
         this.alertService.add('danger', 'Error - Could not load client: Unable to load client, please try again.');
@@ -54,7 +52,6 @@ export class ClientComponent implements OnInit {
       }
 
       this.client.controls['name'].setValue(res.body.client.name);
-      this.client.controls['sku'].setValue(res.body.client.sku);
       this.client.controls['description'].setValue(res.body.client.description);
 
       this.versions = [];
@@ -88,15 +85,14 @@ export class ClientComponent implements OnInit {
 
   updateClient() {
     let name = this.client.controls['name'];
-    let sku = this.client.controls['sku'];
     let description = this.client.controls['description'];
 
-    if (!name.valid || !sku.valid || !description.valid) return this.alertService.add('danger', 'One or more fields are invalid. Please correct them before trying again.');
+    if (!name.valid || !description.valid) return this.alertService.add('danger', 'One or more fields are invalid. Please correct them before trying again.');
 
     this.loading$ = true;
 
-    if (this.sku) {
-      this.clientService.updateClient(sku.value, name.value, description.value).subscribe(res => {
+    if (this.id) {
+      this.clientService.updateClient(this.id, name.value, description.value).subscribe(res => {
         res = new CoreResponse(res);
         if (res.success()) {
           this.submitTxt = 'Saved';
@@ -119,7 +115,7 @@ export class ClientComponent implements OnInit {
         this.alertService.add('danger', error.error.request.message);
       });
     } else {
-      this.clientService.createClient(sku.value, name.value, description.value).subscribe(res => {
+      this.clientService.createClient(name.value, description.value).subscribe(res => {
         res = new CoreResponse(res);
         if (res.success()) {
           this.submitTxt = 'Saved';
@@ -129,6 +125,7 @@ export class ClientComponent implements OnInit {
           let this$ = this;
           setTimeout(function () {
             this$.alertService.add('success', 'Successfully created client');
+            this$.clientService.refresh();
             this$.router.navigate(['/operations/clients']);
           }, 1000);
         } else {
@@ -143,14 +140,17 @@ export class ClientComponent implements OnInit {
   }
 
   deleteVersion(version, content) {
-    this.versionToDelete = version;
+    this.versionToDelete = version.number;
+    const index = this.versions.findIndex(v => v.number === version.number);
+    if (index === -1) return this.alertService.add('danger', 'Error deleteing version');
 
     this._modalService.open(content, {ariaLabelledBy: 'delete-modal'}).result.then((result) => {
       if (result === 'okClick') {
-        this.clientService.deleteClientVersion(this.sku, version).subscribe(res => {
+        this.clientService.deleteClientVersion(this.id, version.number).subscribe(res => {
           res = new CoreResponse(res);
           if (res.success()) {
-            this.getClient();
+            this.alertService.add('success', 'Version Deleted');
+            this.versions.splice(index, 1);
           } else {
             this.alertService.add('danger', 'Error - Could not delete version: ' + version);
           }
@@ -162,14 +162,14 @@ export class ClientComponent implements OnInit {
   }
 
   deleteClient() {
-    if (this.sku) {
+    if (this.id) {
       this.deleteLoading$ = true;
 
-      this.clientService.deleteClient(this.sku).subscribe(res => {
+      this.clientService.deleteClient(this.id).subscribe(res => {
         res = new CoreResponse(res);
         if (res.success()) {
           this.alertService.add('success', 'Deleted Client Successfully.');
-
+          this.clientService.refresh();
           this.router.navigate(['/operations/clients']);
         } else {
           this.alertService.add('danger', 'There was an error deleting the client, please try again later.');
@@ -183,25 +183,62 @@ export class ClientComponent implements OnInit {
   }
 
   openUpload() {
-    const modalRef = this._modalService.open(FileUploadComponent, {ariaLabelledBy: 'confirm-delete-modal', centered: true});
-    modalRef.componentInstance.path = 'client/' + this.sku;
+    if (!this.id) return this.alertService.add('danger', 'You can only upload versions after the client is created.');
+
+    const modalRef = this._modalService.open(FileUploadComponent, {
+      backdrop: 'static',
+      ariaLabelledBy: 'confirm-delete-modal',
+      centered: true
+    });
     modalRef.componentInstance.additionalFields.controls = {
       version: new FormControl('', [Validators.required, Validators.maxLength(30)]),
       'large.changes': new FormControl('', [Validators.required, Validators.maxLength(512)])
     };
     modalRef.result.then((result) => {
-      if (result.length === 0) {
+      const {ids, data} = result;
+      if (ids.length === 0) {
         this.alertService.add('danger', 'Error - Could not upload version');
-      } else if (result.length > 0) {
-        this.getClient();
+      } else if (ids.length > 0) {
+        if (!data.hasOwnProperty('version') || !data.hasOwnProperty('changes')) {
+          return this.alertService.add('danger', 'Error with provided inputs');
+        }
+
+        this.clientService.uploadClient(this.id, ids[0], data.version, data.changes).subscribe({
+          next: res => {
+            res = new CoreResponse(res);
+            if (!res.success()) {
+              this.alertService.add('danger', res.request.message)
+            }
+
+            this.getClient();
+          }, error: err => {
+            this.alertService.add('danger', 'The file was uploaded but there was an error associating it.')
+          }
+        })
       }
     });
+  }
+
+  copyMessage(val: string) {
+    const selBox = document.createElement('textarea');
+    selBox.style.position = 'fixed';
+    selBox.style.left = '0';
+    selBox.style.top = '0';
+    selBox.style.opacity = '0';
+    selBox.value = val;
+    document.body.appendChild(selBox);
+    selBox.focus();
+    selBox.select();
+    document.execCommand('copy');
+    document.body.removeChild(selBox);
+
+    this.alertService.add('info', 'Copied to clipboard');
   }
 
   formatDate(date: string) {
     let d = new Date(date);
 
-   return d.toLocaleString('en-AU');
+    return d.toLocaleString('en-AU');
   }
 
 }

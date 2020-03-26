@@ -38,6 +38,8 @@ export class ReserveATCComponent implements OnInit {
   }
 
   ngOnInit() {
+    if (!this.positions || !this.positions.length || !this.available || !this.available.length || !this.shifts || !this.start || !this.end) return;
+
     let currentDate = this.start;
     while (currentDate <= this.end) {
       if (this.dates.findIndex(d => d.isSameDateAs(currentDate)) === -1) this.dates.push(new Date(currentDate));

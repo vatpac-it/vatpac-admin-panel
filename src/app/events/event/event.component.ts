@@ -30,7 +30,7 @@ export class EventComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.sku = this.route.snapshot.params['sku'];
+    this.sku = this.route.snapshot.params['id'];
     if (this.sku) {
       this.submitTxt = 'Save';
 

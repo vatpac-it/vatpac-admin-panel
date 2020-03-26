@@ -22,16 +22,16 @@
   <table class="table table-striped table-hover">
     <thead>
     <tr>
-      <th scope="col" sortable="sku" class="selectable" (sort)="onSort($event)">SKU</th>
       <th scope="col" sortable="name" class="selectable" (sort)="onSort($event)">Name</th>
       <th scope="col" sortable="description" class="selectable" (sort)="onSort($event)">Description</th>
+      <th scope="col" sortable="versions" class="selectable" (sort)="onSort($event)"># Versions</th>
     </tr>
     </thead>
     <tbody>
-    <tr class="selectable" *ngFor="let client of clients$ | async" (click)="router.navigate(['/operations/clients', client.sku])">
-      <td><ngb-highlight [result]="client.sku" [term]="clientService.searchTerm"></ngb-highlight></td>
+    <tr class="selectable" *ngFor="let client of clients$ | async" (click)="router.navigate(['/operations/clients', client._id])">
       <td><ngb-highlight [result]="client.name" [term]="clientService.searchTerm"></ngb-highlight></td>
       <td><ngb-highlight [result]="client.description" [term]="clientService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="client.versions.toString()" [term]="clientService.searchTerm"></ngb-highlight></td>
     </tr>
     </tbody>
   </table>

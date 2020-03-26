@@ -7,7 +7,7 @@
 <div class="modal-body">
   <div class="row mx-2 px-2" [formGroup]="additionalFields">
     <div class="input-group my-2">
-      <input type="file" #file class="d-none" [accept]="allowed" (change)="onFilesAdded()"/>
+      <input type="file" #file class="d-none" [multiple]="maxFiles > 1" [accept]="allowed" (change)="onFilesAdded()"/>
       <input type="text" class="form-control focus" placeholder="Chose file(s) ..." readonly="readonly"/>
       <span class="input-group-btn">
         <button id="uploadBtn" class="btn btn-secondary" type="button" [disabled]="uploading || uploadSuccessful"
@@ -24,16 +24,16 @@
     </div>
 
     <ul class="list-group list-group-flush w-100">
-      <li *ngFor="let file of files" class="list-group-item">
+      <li *ngFor="let file of files; let i = index" class="list-group-item">
         <div class="row justify-content-between">
           <h4>{{file.file.name}}</h4>
-          <button class="btn btn-link text-danger"
+          <button class="btn btn-link text-danger" [disabled]="uploading"
                   (click)="files.delete(file); files.size === 0 ? primaryButtonText = 'Close' : null">
             <fa-icon [icon]="'times'"></fa-icon>
           </button>
         </div>
         <img class="w-75 my-2 d-block mx-auto" [src]="file.preview" alt="">
-        <ngb-progressbar *ngIf="progress" type="info" [value]="progress[file.file.name].progress | async"
+        <ngb-progressbar *ngIf="progress[i]" type="info" [value]="progress[i].asObservable() | async"
                          height="10px"></ngb-progressbar>
       </li>
     </ul>

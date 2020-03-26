@@ -104,7 +104,7 @@ export class EventForm {
       }
       if (event.available) {
         for (let available of event.available) {
-          this.available.push(new FormControl(available, [Validators.required, Validators.maxLength(10)]));
+          this.available.push(new FormControl(available, [Validators.required, Validators.maxLength(15)]));
         }
       }
       if (event.applications) {

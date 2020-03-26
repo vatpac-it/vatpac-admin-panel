@@ -40,7 +40,7 @@ function matches(user: User, term: string, pipe: PipeTransform) {
   return user.cid.toLowerCase().includes(term)
     || user.name.toLowerCase().includes(term)
     || user.atc_rating.toLowerCase().includes(term)
-    || user.pilot_rating.toString().toLowerCase().includes(term)
+    || (user.pilot_rating || '').toString().toLowerCase().includes(term)
     || user.groups.primary.name.toLowerCase().includes(term);
 }
 
@@ -111,7 +111,7 @@ export class UsersSortService {
         us = us.map(user => {
           user.name = user.first_name && user.last_name ? user.first_name + ' ' + user.last_name : user.first_name;
           user.group_name = user.groups.primary ? user.groups.primary.name : (user.groups.secondary.length > 0 ? user.groups.secondary[0].name : 'None');
-          user.pilot_rating = Array.isArray(user.pilot_rating) ? user.pilot_rating.join(', ') : (parseInt(user.pilot_rating.toString()) === 0 ? 'None' : user.pilot_rating.toString());
+          user.pilot_rating = (user.pilot_rating ? Array.isArray(user.pilot_rating) ? user.pilot_rating.join(', ') : (parseInt(user.pilot_rating.toString()) === 0 ? 'None' : user.pilot_rating.toString()) : 'None');
 
           return user;
         });

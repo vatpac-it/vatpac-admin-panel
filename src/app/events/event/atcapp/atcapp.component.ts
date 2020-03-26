@@ -58,7 +58,7 @@ export class AtcappComponent implements OnInit, OnDestroy {
 
   addIcao() {
     this.positions.push(
-      new FormControl('', [Validators.maxLength(10), Validators.required])
+      new FormControl('', [Validators.maxLength(15), Validators.required])
     );
   }
 

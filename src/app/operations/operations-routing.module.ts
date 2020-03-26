@@ -12,7 +12,7 @@ const routes: Routes = [
   { path: 'clients', canActivate: [AuthGuard], children: [
       { path: '', component: ClientsComponent, canActivate: [AuthGuard]},
       { path: 'create', component: ClientComponent, canActivate: [AuthGuard]},
-      { path: ':sku', component: ClientComponent, canActivate: [AuthGuard]}
+      { path: ':id', component: ClientComponent, canActivate: [AuthGuard]}
     ] },
   { path: 'notams', canActivate: [AuthGuard], children: [
       { path: '', component: NotamsComponent, canActivate: [AuthGuard] },

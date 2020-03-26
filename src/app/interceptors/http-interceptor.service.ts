@@ -25,6 +25,10 @@ export class httpInterceptor implements HttpInterceptor {
       options['headers'] = new HttpHeaders({
         'Authorization': `Api-Key ${environment.apiKey}`
       });
+    } else {
+      options['headers'] = new HttpHeaders({
+        'Authorization': `Bearer `
+      });
     }
 
     req = req.clone(options);

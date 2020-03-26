@@ -2,12 +2,10 @@ import {Injectable, PipeTransform} from '@angular/core';
 import {SortDirection} from "../sortable-header/sortable-header.directive";
 import {Client} from "../models/Client";
 import {BehaviorSubject, Observable, Subject} from "rxjs";
-import {User} from "../models/User";
 import {HttpClient} from "@angular/common/http";
 import {DecimalPipe} from "@angular/common";
 import {debounceTime, delay, map, switchMap, tap} from "rxjs/operators";
 import {CoreResponse} from "../models/CoreResponse";
-import {Event} from "../models/Event";
 
 const url = 'https://core.vatpac.org';
 
@@ -41,9 +39,9 @@ function sort(clients: Client[], column: string, direction: string): Client[] {
 
 function matches(client: Client, term: string, pipe: PipeTransform) {
   term = term.toLowerCase();
-  return client.sku.toLowerCase().includes(term)
-    || client.name.toLowerCase().includes(term)
-    || client.description.toString().toLowerCase().includes(term);
+  return client.name.toLowerCase().includes(term)
+    || client.description.toString().toLowerCase().includes(term)
+    || client.versions.toString().toLowerCase().includes(term);
 }
 
 @Injectable({
@@ -83,43 +81,82 @@ export class ClientService {
     return this.http.get<CoreResponse>(url + '/client');
   }
 
-  public getClient(sku: string): Observable<CoreResponse> {
-    return this.http.get<CoreResponse>(url + '/client/' + sku);
+  public getClient(id: string): Observable<CoreResponse> {
+    return this.http.get<CoreResponse>(url + '/client/' + id);
   }
 
-  public deleteClient(sku: string): Observable<CoreResponse> {
-    return this.http.delete<CoreResponse>(url + '/client/' + sku);
+  public deleteClient(id: string): Observable<CoreResponse> {
+    return this.http.delete<CoreResponse>(url + '/client/' + id);
   }
 
-  public getClientVersion(sku: string): Observable<CoreResponse> {
-    return this.http.get<CoreResponse>(url + '/client/' + sku + '/version');
+  public getClientVersion(id: string): Observable<CoreResponse> {
+    return this.http.get<CoreResponse>(url + '/client/' + id + '/version');
   }
 
-  public deleteClientVersion(sku: string, version: string): Observable<CoreResponse> {
-    return this.http.post<CoreResponse>(url + '/client/' + sku + '/delete', {version: version});
+  public deleteClientVersion(id: string, version: string): Observable<CoreResponse> {
+    return this.http.post<CoreResponse>(url + '/client/' + id + '/delete', {version: version});
   }
 
-  public createClient(sku: string, name: string, description: string): Observable<CoreResponse> {
-    return this.http.post<CoreResponse>(url + '/client/create', {sku: sku, name: name, description: description});
+  public createClient(name: string, description: string): Observable<CoreResponse> {
+    return this.http.post<CoreResponse>(url + '/client/create', {name: name, description: description});
   }
 
-  public updateClient(sku: string, name: string, description: string): Observable<CoreResponse> {
-    return this.http.patch<CoreResponse>(url + '/client/' + sku, {sku: sku, name: name, description: description});
+  public updateClient(id: string, name: string, description: string): Observable<CoreResponse> {
+    return this.http.patch<CoreResponse>(url + '/client/' + id, {name: name, description: description});
+  }
+
+  public uploadClient(id: string, fileId: string, version: string, changes: string): Observable<CoreResponse> {
+    return this.http.post<CoreResponse>(url + '/client/' + id + '/upload', {
+      fileId: fileId,
+      version: version,
+      changes: changes
+    });
   }
 
 
-  get clients$() { return this._clients$.asObservable(); }
-  get total$() { return this._total$.asObservable(); }
-  get loading$() { return this._loading$.asObservable(); }
-  get page() { return this._state.page; }
-  get pageSize() { return this._state.pageSize; }
-  get searchTerm() { return this._state.searchTerm; }
+  get clients$() {
+    return this._clients$.asObservable();
+  }
 
-  set page(page: number) { this._set({page}); }
-  set pageSize(pageSize: number) { this._set({pageSize}); }
-  set searchTerm(searchTerm: string) { this._set({searchTerm}); }
-  set sortColumn(sortColumn: string) { this._set({sortColumn}); }
-  set sortDirection(sortDirection: SortDirection) { this._set({sortDirection}); }
+  get total$() {
+    return this._total$.asObservable();
+  }
+
+  get loading$() {
+    return this._loading$.asObservable();
+  }
+
+  get page() {
+    return this._state.page;
+  }
+
+  get pageSize() {
+    return this._state.pageSize;
+  }
+
+  get searchTerm() {
+    return this._state.searchTerm;
+  }
+
+  set page(page: number) {
+    this._set({page});
+  }
+
+  set pageSize(pageSize: number) {
+    this._set({pageSize});
+  }
+
+  set searchTerm(searchTerm: string) {
+    this._set({searchTerm});
+  }
+
+  set sortColumn(sortColumn: string) {
+    this._set({sortColumn});
+  }
+
+  set sortDirection(sortDirection: SortDirection) {
+    this._set({sortDirection});
+  }
 
   private _set(patch: Partial<State>) {
     Object.assign(this._state, patch);
@@ -138,6 +175,13 @@ export class ClientService {
 
       // Set name field
       if (Array.isArray(c)) {
+        c = c.map(x => {
+          if (typeof x.versions !== "number") {
+            x.versions = x.versions.length;
+          }
+          return x;
+        });
+
         // 1. sort
         let clients = sort(c, sortColumn, sortDirection);
 
