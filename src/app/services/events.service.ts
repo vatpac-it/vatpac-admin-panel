@@ -110,7 +110,7 @@ export class EventsService {
   set sortDirection(sortDirection: SortDirection) { this._set({sortDirection}); }
 
   public getEvents(): Observable<CoreResponse> {
-    return this.http.get<CoreResponse>(url);
+    return this.http.get<CoreResponse>(url + '/all');
   }
 
   public getEvent(sku: string): Observable<FormGroup> {

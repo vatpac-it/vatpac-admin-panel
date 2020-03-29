@@ -1,13 +1,14 @@
-import {Injectable, isDevMode} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
-import {HttpClient} from '@angular/common/http';
-import {Group, User} from '../models/User';
-import {map} from "rxjs/operators";
+import {HttpBackend, HttpClient, HttpHeaders} from '@angular/common/http';
+import {User} from '../models/User';
 import {CoreResponse} from "../models/CoreResponse";
+import {environment} from "../../environments/environment";
+import {Router} from "@angular/router";
 
-const url = 'https://core.vatpac.org';
+const url = environment.url;
 
-interface JWT_Token {
+interface JWTToken {
   token: string;
   expiry: number;
 }
@@ -16,121 +17,111 @@ interface JWT_Token {
   providedIn: 'root'
 })
 export class UserService {
-  private jwt_token: BehaviorSubject<JWT_Token>;
+  private jwt_token: BehaviorSubject<JWTToken>;
   private currentUserSubject: BehaviorSubject<User>;
   public currentUser: Observable<User>;
 
-  constructor(private http: HttpClient) {
-    this.currentUserSubject = new BehaviorSubject<User>(JSON.parse(localStorage.getItem('current_user')));
+  constructor(private httpBackend: HttpBackend, private router: Router) {
+    this.jwt_token = new BehaviorSubject<JWTToken>(null);
+    this.currentUserSubject = new BehaviorSubject<User>(null);
     this.currentUser = this.currentUserSubject.asObservable();
 
-    if (typeof this.jwt_token === 'undefined' || this.jwt_token === null) {
-      this.http.get<CoreResponse>(url + '/sso/refresh_token').subscribe({
-        next: res => {
-          res = new CoreResponse(res);
-          if (!res.success() || !res.body || !res.body.jwt_token || !res.body.jwt_token_expiry) {
-            // window.location.href
-            console.log('Go to Login');
-            return;
-          }
-
-          this.jwt_token.next({token: res.body.jwt_token, expiry: res.body.jwt_token_expiry});
-        },
-        error: err => {
-          console.log('Go to Login');
-        }
-      });
+    if (this.currentJWT === null) {
+      this.getJWT();
+    } else {
+      this.getUser();
     }
-    this.http.get<CoreResponse>(url + '/sso/user')
-      .subscribe((res) => {
-        res = new CoreResponse(res);
-        if (!res.success() || !res.body || !res.body.user) {
-          if (localStorage.getItem('current_user') !== null) {
-            this.logout();
-          }
-          return;
-        }
 
-        let u = res.body.user;
-
-        this.getPerms().subscribe(p => {
-          u.perms = u.perms.concat(p);
-
-          localStorage.setItem('current_user', JSON.stringify(u));
-          this.currentUserSubject.next(u);
-        });
-      }, error1 => {
-        if (localStorage.getItem('current_user') !== null) {
-          this.logout();
-        }
-      });
+    window.addEventListener('storage', this.syncLogout.bind(this));
   }
 
   public get currentUserValue(): User {
     return this.currentUserSubject.value;
   }
 
-  public getUsers(): Observable<CoreResponse> {
-    return this.http.get<CoreResponse>(url + '/access/users');
+  public get currentJWT(): JWTToken {
+    return this.jwt_token.value;
   }
 
-  public getUser(id: string): Observable<CoreResponse> {
-    return this.http.get<CoreResponse>(url + '/access/users/' + id);
+  private redirectToLogin() {
+    if (this.router.url !== '/login') this.router.navigate(['/login']);
   }
 
-  public updateUser(id: string, primary: Group, secondary: Group[]): Observable<CoreResponse> {
-    return this.http.patch<CoreResponse>(url + '/access/users/' + id, {primary: primary, secondary: secondary});
-  }
-
-  public createNote(id: string, content: string): Observable<CoreResponse> {
-    return this.http.post<CoreResponse>(url + '/access/users/' + id + '/newnote', {note: {content: content}});
-  }
-
-  public editNote(id: string, note_id: string, content: string): Observable<CoreResponse> {
-    return this.http.patch<CoreResponse>(url + '/access/users/' + id + '/editnote/' + note_id, {note: {content: content}});
-  }
-
-  public deleteNote(id: string, note_id: string): Observable<CoreResponse> {
-    return this.http.delete<CoreResponse>(url + '/access/users/' + id + '/deletenote/' + note_id);
-  }
-
-  public getPerms() {
-    return this.http.get<CoreResponse>(url + '/sso/user/perms')
-      .pipe(map((res) => {
+  private getUser() {
+    new HttpClient(this.httpBackend).get<CoreResponse>(url + '/sso/user', {
+      withCredentials: true,
+      headers: new HttpHeaders({
+        'Authorization': `Bearer ${this.currentJWT.token}`
+      })
+    })
+      .subscribe((res) => {
         res = new CoreResponse(res);
-        if (!res.success()) {
-          this.logout();
+        if (!res.success() || !res.body || !res.body.user) {
+          this.redirectToLogin();
           return;
         }
 
-        return res.body.perms;
-      }));
+        this.currentUserSubject.next(res.body.user);
+      }, _ => {
+        this.redirectToLogin();
+      });
+  }
+
+  private getJWT() {
+    // Can't use interceptor
+    new HttpClient(this.httpBackend).get<CoreResponse>(url + '/sso/refresh_token',
+      {withCredentials: true}).subscribe({
+      next: res => {
+        res = new CoreResponse(res);
+        if (!res.success() || !res.body || !res.body.jwt_token || !res.body.jwt_token_expiry) {
+          this.redirectToLogin();
+          return;
+        }
+
+        this.jwt_token.next({token: res.body.jwt_token, expiry: res.body.jwt_token_expiry});
+
+        this.getUser();
+
+        // Start auto refresh countdown
+        const time = res.body.jwt_token_expiry - 30000;
+        const this$ = this;
+        setTimeout(function () {
+          console.log('Refreshing JWT');
+          this$.getJWT();
+        }, time >= 30000 ? time : 30000);
+      },
+      error: _ => {
+        this.redirectToLogin();
+      }
+    });
   }
 
   public login() {
-    const callback = isDevMode() ? 'localhost:4200' : 'https://admin.vatpac.org/';
-    window.location.href = url + '/sso?callback=' + encodeURIComponent(callback);
+    window.location.href = url + '/sso?callback=' + encodeURIComponent(environment.base_url);
   }
 
   public logout() {
-    this.logoutData((err) => {
-      console.log('Logged out successfully');
-      window.location.reload();
+    this.jwt_token.next(null);
+
+    return new HttpClient(this.httpBackend).get(`${url}/sso/logout`,
+      {withCredentials: true}).subscribe({
+      complete: () => {
+        localStorage.setItem('logout', String(Date.now()));
+        this.redirectToLogin()
+      }
     });
   }
 
-  public logoutData(cb) {
-    localStorage.removeItem('current_user');
-    this.currentUserSubject.next(null);
-
-    return this.http.get(`${url}/sso/logout`).subscribe({
-      next: cb,
-      error: cb
-    });
+  private syncLogout(ev: KeyboardEvent) {
+    if (ev.key === 'logout') {
+      console.log('Logged out in storage');
+      this.jwt_token.next(null);
+      this.redirectToLogin();
+    }
   }
 
   public loggedIn() {
-    return this.currentUserValue !== null;
+    return this.currentUserValue !== null && this.currentJWT !== null;
   }
 
   /***************************************
@@ -140,20 +131,21 @@ export class UserService {
    ***************************************/
 
   public isStaff() {
-    return this.currentUserValue !== null &&
+    return this.loggedIn() &&
       ((this.currentUserValue.groups.primary && this.currentUserValue.groups.primary.staff) ||
-        this.currentUserValue.groups.secondary.filter(group => group && group.staff === true ).length > 0);
+        this.currentUserValue.groups.secondary.filter(group => group && group.staff === true).length > 0);
   }
 
   public check(sku) {
-    return this.currentUserValue !== null && this.currentUserValue.perms.filter(perm => perm.level === 3 && perm.perm.sku === sku).length > 0;
+    return this.loggedIn() &&
+      this.currentUserValue.perms.filter(perm => perm.level === 3 && perm.perm.sku === sku).length > 0;
   }
 
   public isStaffObserve(cb) {
-    this.currentUser.subscribe(user => {
+    this.currentUser.subscribe(() => {
       let isAdmin = this.currentUserValue !== null &&
         ((this.currentUserValue.groups.primary && this.currentUserValue.groups.primary.staff) ||
-          this.currentUserValue.groups.secondary.filter(group => group && group.staff === true ).length > 0);
+          this.currentUserValue.groups.secondary.filter(group => group && group.staff === true).length > 0);
       cb(isAdmin);
     });
   }

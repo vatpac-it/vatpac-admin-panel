@@ -6,9 +6,8 @@ import {UsersComponent} from "./users/users.component";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
 import {HttpClientModule} from "@angular/common/http";
-import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {FaIconLibrary, FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 
-import {library} from "@fortawesome/fontawesome-svg-core";
 import {faCheck, faEdit, faPlus, faSort, faSortDown, faSortUp, faTimes} from "@fortawesome/free-solid-svg-icons";
 
 import { GroupsComponent } from './groups/groups.component';
@@ -19,8 +18,6 @@ import {SortableHeaderModule} from "../sortable-header/sortable-header.module";
 import { UserComponent } from './users/user/user.component';
 import { ApiKeysComponent } from './api-keys/api-keys.component';
 import { ApiKeyComponent } from './api-keys/api-key/api-key.component';
-
-library.add(faCheck, faTimes, faSort, faSortUp, faSortDown, faPlus, faEdit);
 
 @NgModule({
   declarations: [
@@ -45,4 +42,9 @@ library.add(faCheck, faTimes, faSort, faSortUp, faSortDown, faPlus, faEdit);
   ],
   providers: [DecimalPipe],
 })
-export class AccessModule { }
+export class AccessModule {
+
+  constructor(library: FaIconLibrary) {
+    library.addIcons(faCheck, faTimes, faSort, faSortUp, faSortDown, faPlus, faEdit);
+  }
+}

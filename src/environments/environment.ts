@@ -4,7 +4,9 @@
 
 export const environment = {
   production: false,
-  apiKey: '4dcc4c8b.kRlgCa5czZasNLNRjq7yEmAQdsW12aVLjWyXaIU2Zk'
+  apiKey: '4dcc4c8b.kRlgCa5czZasNLNRjq7yEmAQdsW12aVLjWyXaIU2Zk',
+  url: 'https://core.vatpac.org',
+  base_url: 'http://localhost:4200'
 };
 
 /*

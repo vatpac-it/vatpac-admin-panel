@@ -4,8 +4,8 @@ import {SortDirection} from "../sortable-header/sortable-header.directive";
 import {BehaviorSubject, Observable, Subject} from "rxjs";
 import {DecimalPipe} from "@angular/common";
 import {debounceTime, delay, map, switchMap, tap} from "rxjs/operators";
-import {UserService} from "./user.service";
 import {CoreResponse} from "../models/CoreResponse";
+import {UserAccessService} from "./user-access.service";
 
 interface SearchResult {
   users: User[];
@@ -62,7 +62,7 @@ export class UsersSortService {
     sortDirection: ''
   };
 
-  constructor(private userService: UserService, private pipe: DecimalPipe) {
+  constructor(private userAccessService: UserAccessService, private pipe: DecimalPipe) {
     this._search$.pipe(
       tap(() => this._loading$.next(true)),
       debounceTime(200),
@@ -98,7 +98,7 @@ export class UsersSortService {
   private _search(): Observable<SearchResult> {
     const {sortColumn, sortDirection, pageSize, page, searchTerm} = this._state;
 
-    return this.userService.getUsers().pipe(map(res => {
+    return this.userAccessService.getUsers().pipe(map(res => {
       res = new CoreResponse(res);
       if (!res.success()) {
         return {users: [], total: 0};

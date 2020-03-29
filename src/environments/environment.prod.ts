@@ -1,4 +1,6 @@
 export const environment = {
   production: true,
-  apiKey: ''
+  apiKey: '',
+  url: 'https://core.vatpac.org',
+  base_url: 'https://admin.vatpac.org'
 };

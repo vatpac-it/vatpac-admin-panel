@@ -1,16 +1,17 @@
 import {Component, OnInit} from '@angular/core';
 import {NavigationEnd, Router} from "@angular/router";
+import {UserService} from "./services/user.service";
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
 
   crumbs = [];
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private userService: UserService) {
     this.router.events.subscribe(e => {
       if (e instanceof NavigationEnd) {
         this.crumbs = window.location.pathname.split('/').filter(r => r !== '');

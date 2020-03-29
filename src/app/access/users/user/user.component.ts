@@ -3,12 +3,13 @@ import {FormArray, FormControl, FormGroup, Validators} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
 import {AlertService} from "../../../services/alert.service";
 import {CoreResponse} from "../../../models/CoreResponse";
-import {UserService} from "../../../services/user.service";
 import {Group} from "../../../models/User";
 import {GroupsService} from "../../../services/groups.service";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {NoteEditComponent} from "../../../components/note-edit/note-edit.component";
 import {animate, style, transition, trigger} from "@angular/animations";
+import {UserAccessService} from "../../../services/user-access.service";
+import {UserService} from "../../../services/user.service";
 
 @Component({
   selector: 'app-user',
@@ -76,7 +77,7 @@ export class UserComponent implements OnInit {
   canSubmit$ = true;
   submitTxt = "Save User";
 
-  constructor(private route: ActivatedRoute, private router: Router, private alertService: AlertService, public userService: UserService, private groupsService: GroupsService, private modalService: NgbModal) {
+  constructor(private route: ActivatedRoute, private router: Router, private alertService: AlertService, public userService: UserService, public userAccessService: UserAccessService, private groupsService: GroupsService, private modalService: NgbModal) {
     this.id = this.route.snapshot.params['id'];
     if (!this.id) {
       alertService.add('danger', 'Error: No User Provided');
@@ -85,7 +86,7 @@ export class UserComponent implements OnInit {
     }
 
     let valSet = false;
-    userService.getUser(this.id).subscribe(res => {
+    userAccessService.getUser(this.id).subscribe(res => {
       res = new CoreResponse(res);
       if (res.success()) {
         this.user.controls['cid'].setValue(res.body.user.cid);
@@ -137,7 +138,6 @@ export class UserComponent implements OnInit {
 
         if (res.body.user.staff_notes) {
           for (let note of res.body.user.staff_notes) {
-            console.log(note);
             this.staff_notes.push(new FormGroup({
               _id: new FormControl(note._id, Validators.required),
               content: new FormControl({value: note.content, disabled: true}, [Validators.required, Validators.maxLength(2000)]),
@@ -186,7 +186,7 @@ export class UserComponent implements OnInit {
   updateUser() {
     this.loading$ = true;
 
-    this.userService.updateUser(this.id, this.primary, this.secondary).subscribe(res => {
+    this.userAccessService.updateUser(this.id, this.primary, this.secondary).subscribe(res => {
       res = new CoreResponse(res);
       if (res.success()) {
         this.submitTxt = 'Saved';
@@ -227,7 +227,7 @@ export class UserComponent implements OnInit {
     modalRef.result.then(response => {
       if (response === 'cross-click') return;
 
-      this.userService.createNote(this.id, response.content.value).subscribe(res => {
+      this.userAccessService.createNote(this.id, response.content.value).subscribe(res => {
         res = new CoreResponse(res);
         if (!res.success()) return this.alertService.add('danger', 'There was an error creating the note');
 
@@ -255,12 +255,11 @@ export class UserComponent implements OnInit {
     modalRef.componentInstance.creator = group.controls.creator.value;
     modalRef.componentInstance.editor = {user: (group.controls.editor as FormGroup).controls.user.value, date: (group.controls.editor as FormGroup).controls.date.value};
     modalRef.result.then(response => {
-      console.log(response);
       if (response === 'cross-click') return;
 
       this.loadingNotes.push(i);
 
-      this.userService.editNote(this.id, group.controls._id.value, response.content.value).subscribe(res => {
+      this.userAccessService.editNote(this.id, group.controls._id.value, response.content.value).subscribe(res => {
         res = new CoreResponse(res);
         if (!res.success()) {
           this.alertService.add('danger', 'There was an error editing the note');
@@ -281,7 +280,7 @@ export class UserComponent implements OnInit {
     if (this.staff_notes.length > 0) {
       this.modalService.open(content, {ariaLabelledBy: 'confirm-delete-modal'}).result.then((result) => {
         if (result === 'ok-click') {
-          this.userService.deleteNote(this.id, (this.staff_notes.controls[i] as FormGroup).controls._id.value).subscribe(res => {
+          this.userAccessService.deleteNote(this.id, (this.staff_notes.controls[i] as FormGroup).controls._id.value).subscribe(res => {
             res = new CoreResponse(res);
             if (!res.success()) return this.alertService.add('danger', 'There was an error deleting the note');
 
