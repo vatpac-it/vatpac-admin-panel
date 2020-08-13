@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import {Observable, Observer, Subject} from "rxjs";
 import {AnonymousSubject} from "rxjs/internal-compatibility";
+import {UserService} from "./user.service";
 
 @Injectable({
   providedIn: 'root'
 })
 export class WebsocketService {
 
-  constructor() { }
+  constructor(private userService: UserService) { }
 
   private subject: Subject<MessageEvent>;
 
@@ -21,6 +22,14 @@ export class WebsocketService {
 
   private create(url, binaryType: BinaryType = null): Subject<MessageEvent> {
     let ws = new WebSocket(url);
+
+    const authMsg = {
+      type: 'authentication',
+      payload: {token: this.userService.currentJWT.token}
+    }
+    ws.onopen = function (evt) {
+      ws.send(JSON.stringify(authMsg));
+    };
 
     if (binaryType !== null) {
       ws.binaryType = binaryType;
@@ -40,8 +49,7 @@ export class WebsocketService {
       next: (ev: MessageEvent | string | ArrayBuffer) => {
         waitForConnection(ws, function () {
           if (ws.readyState === WebSocket.OPEN) {
-            if (typeof ev === 'string') return ws.send(ev);
-            if (ev instanceof ArrayBuffer) return ws.send(ev);
+            if (typeof ev === 'string' || ev instanceof ArrayBuffer) return ws.send(ev);
           }
         });
       }

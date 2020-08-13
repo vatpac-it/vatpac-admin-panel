@@ -24,13 +24,13 @@ export class FileUploadComponent implements OnInit {
 
   objectKeys = Object.keys;
 
-  progress: BehaviorSubject<Number>[] = [];
-  canBeClosed = true;
-  primaryButtonText = 'Close';
-  showCancelButton = true;
-  uploading = false;
-  uploadSuccessful = false;
-  uploadFailed = false;
+  progress: BehaviorSubject<Number>[];
+  canBeClosed: boolean;
+  primaryButtonText: string;
+  showCancelButton: boolean;
+  uploading: boolean;
+  uploadSuccessful: boolean;
+  uploadFailed: boolean;
 
   allowed = '';
 
@@ -56,7 +56,13 @@ export class FileUploadComponent implements OnInit {
   }
 
   ngOnInit() {
-
+    this.progress = [];
+    this.canBeClosed = true;
+    this.primaryButtonText = 'Close';
+    this.showCancelButton = true;
+    this.uploading = false;
+    this.uploadSuccessful = false;
+    this.uploadFailed = false;
   }
 
   addFiles() {

@@ -5,7 +5,7 @@
 export const environment = {
   production: false,
   apiKey: '4dcc4c8b.kRlgCa5czZasNLNRjq7yEmAQdsW12aVLjWyXaIU2Zk',
-  url: 'https://core.vatpac.org',
+  url: 'http://192.168.50.7:3000',
   base_url: 'http://localhost:4200'
 };
 

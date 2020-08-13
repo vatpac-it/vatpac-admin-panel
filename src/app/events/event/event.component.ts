@@ -103,6 +103,8 @@ export class EventComponent implements OnInit, OnDestroy {
           this.submitDisabled = false;
         }, error1 => {
           this.alertService.add('danger', 'There was an error updating the event, please try again. ' + error1.error.request.message || '');
+          this.loading$ = false;
+          this.submitDisabled = false;
         });
       } else {
         this.eventsService.createEvent(event).subscribe(res => {
@@ -122,6 +124,8 @@ export class EventComponent implements OnInit, OnDestroy {
           this.submitDisabled = false;
         }, error1 => {
           this.alertService.add('danger', 'There was an error creating the event, please try again. ' + error1.error.request.message || '');
+          this.loading$ = false;
+          this.submitDisabled = false;
         });
       }
 

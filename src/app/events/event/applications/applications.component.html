@@ -5,7 +5,9 @@
       <p><strong>NOTE: </strong> When assigning a controller position, the position is set upon clicking the option the the dropdown, you <strong>do not</strong> need to click save at the bottom of the page.</p>
 
       <div class="row justify-content-end mx-1">
-        <button class="btn btn-info my-3" (click)="openPreview()">Preview Application timeline</button>
+        <button class="btn btn-warning my-3 mx-2" (click)="sendReminder()">Send Reminder</button>
+        <button class="btn btn-primary my-3 mx-2" (click)="openAddApplication(addApplicationModal)">Add Application</button>
+        <button class="btn btn-info my-3 mx-2" (click)="openPreview()">Preview Application timeline</button>
       </div>
 
       <div *ngFor="let d of deselected" class="alert alert-warning" role="alert">
@@ -61,3 +63,31 @@
     </div>
   </div>
 </div>
+
+<ng-template #addApplicationModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Add Application</h4>
+  </div>
+  <div class="modal-body" [formGroup]="addApplicationForm">
+    <div class="form-group">
+      <label>User CID</label>
+      <input type="text" class="form-control" placeholder="123456" formControlName="cid">
+    </div>
+    <div class="form-group">
+      <label>Position</label>
+      <input type="text" class="form-control" placeholder="TWR" formControlName="position">
+    </div>
+    <div class="form-group">
+      <label>Date Time in ISO format (e.g. 2020-02-24T10:00:00.000Z)</label>
+      <input type="text" class="form-control" placeholder="2020-02-24T10:00:00.000Z" formControlName="date">
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" (click)="modal.dismiss('closed')">
+      Cancel
+    </button>
+    <button class="btn btn-primary" (click)="modal.close('ok')" [disabled]="applicationLoading$">
+      Add Position
+    </button>
+  </div>
+</ng-template>

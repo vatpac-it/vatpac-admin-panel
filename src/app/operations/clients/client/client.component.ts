@@ -59,7 +59,7 @@ export class ClientComponent implements OnInit {
         this.versions.push({
           number: version.number,
           created: this.formatDate(version.created),
-          signature: version.file.signature || null,
+          signature: version.file ? version.file.signature || null : null,
           download: version.file ? `https://core.vatpac.org/files/${version.file._id}` : null
         });
       });

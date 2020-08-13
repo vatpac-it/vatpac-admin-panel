@@ -17,6 +17,11 @@ import {ReserveATCComponent} from "../../../components/reserve-atc/reserve-atc.c
 export class ApplicationsComponent implements OnInit, OnDestroy {
 
   event: FormGroup = this.fb.group(new EventForm());
+  addApplicationForm: FormGroup = new FormGroup({
+    cid: new FormControl('', Validators.required),
+    position: new FormControl('', Validators.required),
+    date: new FormControl('', Validators.required)
+  });
   eventSub: Subscription;
 
   selectedPositions: {date: Date, user_id: string, position: string}[] = [];
@@ -25,6 +30,8 @@ export class ApplicationsComponent implements OnInit, OnDestroy {
 
   loading: {userId: string, date: Date}[] = [];
   success: {userId: string, date: Date}[] = [];
+
+  applicationLoading$ = false;
 
   constructor(private eventsService: EventsService, private activeRoute: ActivatedRoute, private modalService: NgbModal, private alertService: AlertService, private fb: FormBuilder) { }
 
@@ -120,6 +127,68 @@ export class ApplicationsComponent implements OnInit, OnDestroy {
     modalRef.componentInstance.end = this.event.get('end').value;
   }
 
+  openAddApplication(modal) {
+    const modalRef = this.modalService.open(modal, {centered: true, size: 'lg'});
+    modalRef.result.then(result => {
+      if (result !== 'ok') return;
+      if (this.addApplicationForm.valid) {
+        this.applicationLoading$ = true;
+        const positions = [{position: this.addApplicationForm.get('position').value, date: this.addApplicationForm.get('date').value}];
+        console.log(positions, this.event.get('sku').value, this.addApplicationForm.get('cid').value);
+        this.eventsService.addApplication(this.event.get('sku').value, this.addApplicationForm.get('cid').value, positions).subscribe((res) => {
+          res = new CoreResponse(res);
+          console.log(res);
+          if (!res.success()) {
+            this.alertService.add('danger', 'Could not add application: ' + res.request.message);
+          } else {
+            console.log(res.body);
+            if (res.body.applications.length === 0) return this.alertService.add('danger', 'Could not add application');
+            const application = res.body.applications[0];
+            this.applications.push(new FormGroup({
+              user: new FormGroup({
+                _id: new FormControl(application.user._id, [Validators.required]),
+                cid: new FormControl(application.user.cid, [Validators.required]),
+                first_name: new FormControl(application.user.first_name, [Validators.required]),
+                last_name: new FormControl(application.user.last_name, [Validators.required])
+              }),
+              position: new FormControl(application.positions.join(', '), [Validators.required]),
+              date: new FormControl(new Date(application.date), [Validators.required]),
+              private: new FormControl(application.private, [Validators.required])
+            }));
+            this.alertService.add('success', 'Position added successfully');
+            this.addApplicationForm.reset();
+          }
+          this.applicationLoading$ = false;
+        }, error => {
+          console.log(error);
+          let errmsg = '';
+          if (error.error && error.error.request) {
+            errmsg = ': ' + error.error.request.message;
+          } else if (error.status === 409) {
+            errmsg = ': Position taken';
+          }
+          this.applicationLoading$ = false;
+          this.alertService.add('danger', 'Could not add application' + errmsg);
+        })
+      }
+    }).catch(_ => {})
+  }
+
+  sendReminder() {
+    this.eventsService.sendReminder(this.event.get('sku').value).subscribe({
+      next: res => {
+        res = new CoreResponse(res);
+        if (!res.success()) {
+          return this.alertService.add('danger', 'Error sending reminder email');
+        }
+        this.alertService.add('success', 'Reminder email sent successfully');
+      },
+      error: err => {
+        this.alertService.add('danger', 'Error sending reminder email');
+      }
+    })
+  }
+
   isLoading(userId, date) {
     return this.loading.some(l => l.userId === userId && l.date === date);
   }
@@ -131,7 +200,7 @@ export class ApplicationsComponent implements OnInit, OnDestroy {
   formatDate(date: string): string {
     let d = new Date(date);
 
-    return d.getUTCDate() + '/' + d.getUTCMonth() + '/' + d.getUTCFullYear();
+    return d.getUTCDate() + '/' + (parseInt(d.getUTCMonth().toString()) + 1) + '/' + d.getUTCFullYear();
   }
 
   formatTime(date: string): string {

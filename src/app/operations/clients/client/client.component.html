@@ -38,6 +38,7 @@
 <!-- TODO: Signature to clipboard -->
                 <button *ngIf="version.signature" class="btn btn-outline-secondary mx-2" placement="auto" [ngbTooltip]="version.signature" type="button" (click)="copyMessage(version.signature)"><fa-icon icon="key"></fa-icon></button>
                 <a *ngIf="version.download" class="btn btn-outline-secondary mx-2" target="_blank" [href]="version.download"><fa-icon icon="download"></fa-icon></a>
+                <span *ngIf="!version.download" class="text-danger">There is no file associated, version ignored.</span>
                 <button class="btn btn-outline-danger mx-2" (click)="deleteVersion(version, deleteVersionModal)" type="button"><fa-icon icon="trash"></fa-icon></button>
               </td>
             </tr>

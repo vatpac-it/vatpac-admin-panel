@@ -157,6 +157,14 @@ export class EventsService {
     return this.http.post<CoreResponse>(`${url}/${sku}/setPosition`, {userId: userId, position: position, date: date, hidden: hidden});
   }
 
+  public addApplication(sku, cid, positions) {
+    return this.http.post<CoreResponse>(`${url}/${sku}/addApplication`, {cid: cid, positions: positions});
+  }
+
+  public sendReminder(sku) {
+    return this.http.post<CoreResponse>(`${url}/${sku}/sendReminder`, {});
+  }
+
   private _set(patch: Partial<State>) {
     Object.assign(this._state, patch);
     this._search$.next();
