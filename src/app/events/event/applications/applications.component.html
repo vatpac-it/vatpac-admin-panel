@@ -5,7 +5,7 @@
       <p><strong>NOTE: </strong> When assigning a controller position, the position is set upon clicking the option the the dropdown, you <strong>do not</strong> need to click save at the bottom of the page.</p>
 
       <div class="row justify-content-end mx-1">
-        <button class="btn btn-warning my-3 mx-2" (click)="sendReminder()">Send Reminder</button>
+        <button class="btn btn-warning my-3 mx-2" (click)="sendReminder(confirmSendModal)">Send Reminder</button>
         <button class="btn btn-primary my-3 mx-2" (click)="openAddApplication(addApplicationModal)">Add Application</button>
         <button class="btn btn-info my-3 mx-2" (click)="openPreview()">Preview Application timeline</button>
       </div>
@@ -88,6 +88,23 @@
     </button>
     <button class="btn btn-primary" (click)="modal.close('ok')" [disabled]="applicationLoading$">
       Add Position
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #confirmSendModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Send Reminder</h4>
+  </div>
+  <div class="modal-body">
+    <p>Are you sure you want to send an email to <strong>ALL</strong> set positions? Make sure your roster is complete.</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" (click)="modal.dismiss('closed')">
+      Cancel
+    </button>
+    <button class="btn btn-primary" (click)="modal.close('ok')">
+      Full Send
     </button>
   </div>
 </ng-template>

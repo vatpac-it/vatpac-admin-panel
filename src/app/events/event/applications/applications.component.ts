@@ -174,19 +174,23 @@ export class ApplicationsComponent implements OnInit, OnDestroy {
     }).catch(_ => {})
   }
 
-  sendReminder() {
-    this.eventsService.sendReminder(this.event.get('sku').value).subscribe({
-      next: res => {
-        res = new CoreResponse(res);
-        if (!res.success()) {
-          return this.alertService.add('danger', 'Error sending reminder email');
+  sendReminder(modal) {
+    const modalRef = this.modalService.open(modal, {centered: true});
+    modalRef.result.then(result => {
+      if (result !== 'ok') return;
+      this.eventsService.sendReminder(this.event.get('sku').value).subscribe({
+        next: res => {
+          res = new CoreResponse(res);
+          if (!res.success()) {
+            return this.alertService.add('danger', 'Error sending reminder email');
+          }
+          this.alertService.add('success', 'Reminder email sent successfully');
+        },
+        error: err => {
+          this.alertService.add('danger', 'Error sending reminder email');
         }
-        this.alertService.add('success', 'Reminder email sent successfully');
-      },
-      error: err => {
-        this.alertService.add('danger', 'Error sending reminder email');
-      }
-    })
+      })
+    }).catch(_ => {})
   }
 
   isLoading(userId, date) {
